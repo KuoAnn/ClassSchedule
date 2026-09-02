@@ -4,7 +4,10 @@
 .sheet.flat .hcorner{position:static}
 .sheet.flat .gut{position:relative}
 .sheet.flat .ndock{display:none}
-.sheet.weekexp{width:max-content}
+/* 單日寬在畫面上是照螢幕算的（sizeDays()），但匯出的圖不該跟著手機寬度變 —
+   同一份課表在不同手機上要匯出同一張圖，所以這裡把 --dayw 釘回固定值。
+   宣告在 .sheet 上才蓋得過 sizeDays() 寫在 :root 的 inline 值（自訂屬性靠繼承） */
+.sheet.weekexp{width:max-content;--dayw:320px}
 .sheet.weekexp .nlist,.sheet.weekexp .ncar{width:max-content}
 .sheet.weekexp .ntrack{overflow:visible;padding:0!important;justify-content:flex-start;width:max-content}
 .sheet.weekexp .dgrp.clone{display:none}

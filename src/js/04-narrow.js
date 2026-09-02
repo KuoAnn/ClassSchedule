@@ -34,20 +34,46 @@ function setFade(car, f){
   car.style.setProperty('--fadeL', f + 'px');
   car.style.setProperty('--fadeR', f + 'px');
 }
+// 單日寬度是算出來的，不是寫死的 320px：手機夠寬就一次擺得下兩天以上，
+// 不必一天一天滑。MINDAY 是「卡片還讀得下去」的下限（實測 150px：時段、老師、
+// 暫停標籤都還放得進一行），MAXDAY 是原本的單日寬，不要因為螢幕大就把卡片拉更寬。
+var MINDAY = 150, MAXDAY = 320;
+function sizeDays(){
+  // clientWidth 已經扣掉左側時間欄與 .sheet 的內距，也含 layout() 自己塞的置中 padding
+  var W = track.clientWidth;
+  if (W <= 0) return 1;
+  var gap = px('--gap', 12);
+  var per = Math.max(1, Math.min(NDAYS, Math.floor((W + gap) / (MINDAY + gap))));
+  var w = Math.min(MAXDAY, Math.floor((W - (per - 1) * gap) / per));
+  document.documentElement.style.setProperty('--dayw', w + 'px');
+  return per;
+}
 function layout(){
   if (!document.documentElement.classList.contains('nv')) return;
   var nl = document.querySelector('.nlist'), car = document.querySelector('.ncar');
+  var per = sizeDays();
   var dayw = px('--dayw', 320), gap = px('--gap', 12);
   var W = track.clientWidth, step = dayw + gap, n = NDAYS;
   // 七天全部放得下 → 關閉輪播互動
   var full = (n * dayw + (n - 1) * gap) <= W;
   track.classList.toggle('full', full);
   nl.classList.toggle('full', full);
+  // 一次擺得下兩天以上就靠左對齊、整天整天地翻（吸附點改成 start）；
+  // 只擺得下一天時才維持原本的「當天置中、左右露一角」
+  var multi = !full && per > 1;
+  track.classList.toggle('multi', multi);
   navp.style.display = navn.style.display = full ? 'none' : '';
   if (full) {
     track.style.paddingLeft = track.style.paddingRight = '0px';
     track.scrollLeft = 0;
     setFade(car, 0);
+    return;
+  }
+  if (multi) {
+    track.style.paddingLeft = track.style.paddingRight = '0px';
+    setFade(car, 0);
+    navp.style.left = '23px';
+    navn.style.left = (window.innerWidth - 23) + 'px';
     return;
   }
   // 當天置中：左右各留 (可視寬 − 單日寬)/2，兩端的日子也能捲到正中
@@ -62,7 +88,9 @@ function layout(){
   navp.style.left = '23px';
   navn.style.left = (window.innerWidth - 23) + 'px';
 }
-window.addEventListener('resize', function(){ measureDock(); syncRows(); layout(); goDay(cur + NDAYS, false); updateDock(); });
+// syncRows() 一定要排在 layout() 後面：layout() 會算出新的 --dayw，
+// 卡片寬度變了換行就變了，先量高度等於拿舊寬度的結果去對齊
+window.addEventListener('resize', function(){ measureDock(); layout(); syncRows(); goDay(cur + NDAYS, false); updateDock(); });
 // 各日的同一小時列取最大高度，讓七天橫向對齊；空班自然留白
 function measureDock(){
   var t = document.querySelector('.top');
@@ -210,9 +238,9 @@ track.addEventListener('scroll', function(){
 })();
 // 首次進入定位到今天（週一=0 … 週日=6）
 (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve())
-  .then(function(){ measureDock(); syncRows(); layout(); goDay(cur + NDAYS, false); updateDock(); });
+  .then(function(){ measureDock(); layout(); syncRows(); goDay(cur + NDAYS, false); updateDock(); });
 measureDock();
-syncRows();
 layout();
+syncRows();
 goDay(((new Date().getDay() + 6) % 7) + NDAYS, false);
 updateDock();

@@ -16,7 +16,8 @@ function setView(v){
   setViewport(v === 'n');
   fitCells();
   measureDock();
-  if (v === 'n') requestAnimationFrame(function(){ syncRows(); layout(); goDay(cur + NDAYS, false); updateDock(); });
+  // layout() 先跑：它會依螢幕寬算出 --dayw，syncRows() 才量得到對的卡片高度
+  if (v === 'n') requestAnimationFrame(function(){ layout(); syncRows(); goDay(cur + NDAYS, false); updateDock(); });
   else ndock.classList.remove('show');
 }
 vseg.addEventListener('click', function(e){
