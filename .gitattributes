@@ -1,0 +1,13 @@
+# shell 腳本一律以 LF 簽出：Windows 的 core.autocrlf=true 會把 run.sh 轉成 CRLF，
+# 在較嚴格的 sh／Linux CI 上會以 $'\r': command not found 死掉
+*.sh text eol=lf
+
+# 產物與範本資源都是純文字，交由 git 正規化為 LF 存放
+*.py text
+*.css text
+*.js text
+*.html text
+*.svg text
+*.md text
+*.csv text
+*.yml text
