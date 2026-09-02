@@ -21,7 +21,10 @@ document.getElementById('dl').addEventListener('click', function(){
   function restore(){
     hide.forEach(function(el){el.style.visibility=''});
     sheet.classList.remove('nopast','flat','noto','weekexp','npack');
+    // 先 markPast() 再 syncRows()：狀態標籤是塞進 .nr 的，會影響卡片高度，
+    // 順序反了就會用缺標籤的高度去對齊，卡片被 .hrow 的 overflow 切掉
     markPast();
+    syncRows();
     btn.disabled=false; btn.classList.remove('busy'); btn.removeAttribute('aria-busy');
   }
   (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(function(){
@@ -32,9 +35,11 @@ document.getElementById('dl').addEventListener('click', function(){
     document.querySelectorAll('.st-done,.st-live').forEach(function(c){
       c.classList.remove('st-done','st-live');
     });
-    // 直式匯出：空堂不留白，每天各自把卡片往上收（畫面上的小時列對齊只為了滑動時好比較）
+    // 直式匯出：留住左側時間軸與逐時對齊（標籤才指得到正確的卡片），改用壓縮卡片省高度
     if (nar) sheet.classList.add('npack');
     if (nar && !track.classList.contains('full')) sheet.classList.add('weekexp');
+    // 卡片被 npack 壓矮了，對齊高度要按新的內容重算，否則每列都留著舊的空白
+    if (nar) syncRows();
     hide.forEach(function(el){el.style.visibility='hidden'});
     // 手機 WebView 的 canvas 上限比桌機低，畫素太多會整個失敗；桌機仍維持 scale 2
     var area = sheet.offsetWidth * sheet.offsetHeight;

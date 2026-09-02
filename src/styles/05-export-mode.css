@@ -15,10 +15,17 @@
 .sheet.noto .col.today{background:transparent}
 .sheet.noto .tdy{display:none}
 .sheet.noto .dgrp.today .dhd{border-bottom-color:var(--lane)}
-/* npack — 直式匯出：空堂整列拿掉，各日的卡片往上緊密排列。
-   一旦不再逐時對齊，左側時間欄就對不上任何一張卡（會標錯時間），所以一起收掉；
-   每張卡本身都印著自己的時段，資訊不會遺失。height 要 !important：
-   syncRows() 把跨日對齊的高度寫成 inline style 了 */
-.sheet.npack .ngut{display:none}
-.sheet.npack .hrow.empty{display:none}
-.sheet.npack .hrow{height:auto!important;border-top:0;padding-top:0}
+/* npack — 直式匯出：保留左側時間軸，並維持「同一小時跨日對齊」。
+   時間欄是七天共用的一欄，一旦某天自己往上收，標籤就會指到別的時段的卡片（錯的資訊），
+   所以對齊不能拿掉；空堂的留白改用壓縮卡片來省 —— 直式匯出是拿來看整週的，
+   卡片裡的行距與內距在螢幕上是為了好點擊，印成圖只是白費高度。
+   卡片變矮之後 syncRows() 寫在 .hrow／.ngc 上的 inline 高度就過大了，
+   所以 08-export.js 掛上 npack 之後會再算一次（還原時也要再算回來） */
+.sheet.npack .lc{padding:5px 8px;margin-bottom:4px;border-radius:6px}
+.sheet.npack .lc .nr{gap:6px}
+.sheet.npack .lc .n{line-height:1.18}
+.sheet.npack .lc .t,.sheet.npack .lc .m{line-height:1.24}
+.sheet.npack .lc .bt{margin-top:3px;gap:4px}
+.sheet.npack .lc .bt:empty{display:none}
+.sheet.npack .hrow{padding-top:4px}
+.sheet.npack .ngc{padding-top:4px}
