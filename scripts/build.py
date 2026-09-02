@@ -525,13 +525,15 @@ def card_parts(it):
         checked(fit(deepen(base), cardbg), cardbg, "課名 " + it["c"]),
         bi(esc(it["n"]), esc(it["en"])))
     dur = mn(it["e"]) - mn(it["s"])
-    # 起訖皆為整點時兩端都省略分鐘：11:00–12:00 → 11–12
-    if mn(it["s"]) % 60 == 0 and mn(it["e"]) % 60 == 0:
-        span = "%s–%s" % (it["s"][:2], it["e"][:2])
+    # 一小時是這裡的預設時長（107 堂裡有 92 堂），結束時間等於「起始 + 1 小時」、
+    # 印出來是多餘的資訊，所以只留起始時間 HH:mm。其他時長照樣印起訖並附上分鐘數，
+    # 那顆 (75)／(90) 就是「這堂不是一小時」的訊號。
+    # 無障礙不受影響：labz／labe 的起訖時間是另外組的，一直都是完整的。
+    if dur == 60:
+        time = '<div class="t"><span class="hh">%s</span></div>' % it["s"]
     else:
-        span = "%s–%s" % (it["s"], it["e"])
-    time = ('<div class="t"><span class="hh">%s</span>%s</div>'
-            % (span, '' if dur == 60 else ' <i class="du">(%d)</i>' % dur))
+        time = ('<div class="t"><span class="hh">%s–%s</span>'
+                ' <i class="du">(%d)</i></div>' % (it["s"], it["e"], dur))
     if it["lv"] in EN_LV:
         lvbg, lvfg = LV_STYLE[it["lv"]]
         lv = ('<i class="lv" style="background:%s;color:%s">%s</i>'
