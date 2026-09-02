@@ -12,7 +12,7 @@ _p.add_argument("--byline", default="Lulu 製作", help="署名（中文）")
 _p.add_argument("--byline-en", default="Made by Lulu", help="署名（英文）")
 _a = _p.parse_args()
 
-_ROOT = os.path.dirname(os.path.abspath(__file__))
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = _a.csv or sorted(glob.glob(os.path.join(_ROOT, "data", "*.csv")))[-1]
 _stem = os.path.splitext(os.path.basename(SRC))[0]
 _m = re.search(r"(\d{1,2})\s*月", _stem)

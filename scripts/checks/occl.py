@@ -1,7 +1,7 @@
 import os
 from playwright.sync_api import sync_playwright
 import sys, glob, os
-_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 def target():
     for a in sys.argv[1:]:
         if a.endswith('.html'):
