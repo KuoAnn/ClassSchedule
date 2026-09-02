@@ -456,6 +456,8 @@ justify-content:center}
 .ntrack.full .dgrp.clone{display:none}
 .nlist.full .ncar::before,.nlist.full .ncar::after{display:none}
 .sheet.flat .top,.sheet.flat .headrow{position:static}
+.sheet.flat .topspacer{display:none}
+.sheet.flat .hcorner{position:static}
 .sheet.flat .gut{position:relative}
 .sheet.flat .ndock{display:none}
 .sheet.weekexp{width:max-content}
@@ -508,39 +510,61 @@ border-radius:4px;padding:1px 6px;letter-spacing:.04em;white-space:nowrap}
 .hd .by{font-size:13px;color:var(--ink3);letter-spacing:.14em;margin-top:7px}
 .hd h1 em{font-style:normal;font-size:17px;font-weight:400;color:var(--ink3);letter-spacing:.12em;margin-left:18px}
 
-.top{position:sticky;top:0;z-index:30;background:var(--page);padding:20px 0 11px}
-.trow{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.top{position:fixed;top:0;left:0;right:0;z-index:30;background:var(--page);
+padding:13px 20px 10px;border-bottom:1px solid rgba(0,0,0,.05)}
+.topspacer{height:var(--dockH,92px)}
+.trow{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .tools{display:flex;gap:10px;align-items:center;flex:0 0 auto}
-html.wv .tools{position:fixed;top:14px;right:16px;z-index:32}
-/* 視窗比紙張窄時（例如手機用寬版），固定定位的功能列會蓋到標題，
-   改成排在標題下方、靠左，隨標題一起 sticky */
+/* 空間不足時縮字級與按鈕，讓標題與功能列維持同一列 */
 @media (max-width:900px){
-  html.wv .tools{position:static}
-  html.wv .trow{flex-direction:column;align-items:flex-start;gap:11px}
-  html.wv .keys{max-width:calc(100vw - 40px);flex-wrap:nowrap;overflow-x:auto;
-    scrollbar-width:none;padding-bottom:3px}
-  html.wv .keys::-webkit-scrollbar{display:none}
-  html.wv .top{max-width:calc(100vw - 40px)}
+  .top{padding:10px 14px 8px}
+  .hd h1{font-size:22px}
+  .hd h1 em{font-size:12px;margin-left:9px}
+  .hd .by{font-size:11px;margin-top:4px;letter-spacing:.1em}
+  .tools{gap:6px}
+  .seg{padding:2px}
+  .seg button{padding:5px 10px;font-size:12.5px}
+  #view button{padding:5px 8px}
+  #view svg{width:15px;height:15px}
+  #dl{width:30px;height:30px}
+  #dl svg{width:15px;height:15px}
+  .top .keys{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
+    padding-bottom:2px;margin-top:8px;gap:0 16px}
+  .top .keys::-webkit-scrollbar{display:none}
+}
+@media (max-width:560px){
+  .hd h1{font-size:19px}
+  .hd .by{display:none}
+  .seg button{padding:5px 8px;font-size:12px}
+  #view button{padding:5px 7px}
+  .top .key{font-size:13px}
 }
 
-.tools button{font:400 14px/1 inherit;color:var(--ink2);background:#fff;border:1px solid var(--rule2);
-padding:11px 20px;cursor:pointer;letter-spacing:.06em;border-radius:22px}
-#dl{padding:0;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-#dl svg{width:19px;height:19px;display:block}
+.tools{--btnH:34px}
+.tools button{font:400 14px/1 inherit;color:var(--ink2);background:#fff;
+border:1px solid var(--rule2);cursor:pointer;letter-spacing:.06em;border-radius:999px}
+#dl{padding:0;width:var(--btnH);height:var(--btnH);border-radius:50%;
+display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+#dl svg{width:17px;height:17px;display:block}
 #dl .i-sp{display:none}
 #dl.busy .i-dl{display:none}
 #dl.busy .i-sp{display:block;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .tools button:hover{background:#faf7f1;color:var(--ink)}
 .tools button:disabled{opacity:.5;cursor:default}
-.seg{display:flex;background:#fff;border:1px solid var(--rule2);border-radius:22px;padding:3px}
-.seg button{border:0;background:transparent;padding:8px 16px;border-radius:18px;font-size:14px;color:var(--ink2);letter-spacing:.04em}
+.seg{display:flex;align-items:center;height:var(--btnH);background:#fff;
+border:1px solid var(--rule2);border-radius:999px;padding:3px;box-sizing:border-box}
+.seg button{border:0;background:transparent;padding:0 14px;border-radius:999px;
+height:100%;display:flex;align-items:center;font-size:13.5px;color:var(--ink2);letter-spacing:.04em}
 .seg button.on{background:#ece5d9;color:var(--ink);font-weight:500}
-#view button{padding:7px 13px;display:flex;align-items:center;justify-content:center}
-#view svg{width:18px;height:18px;display:block}
+#view button{padding:0 11px;justify-content:center}
+#view svg{width:17px;height:17px;display:block}
 
-.headrow{display:flex;margin-left:var(--gut);border-radius:10px 10px 0 0;overflow:hidden;
-position:sticky;top:var(--dockH,92px);z-index:25;background:var(--page)}
+.headrow{display:flex;position:sticky;top:var(--dockH,92px);z-index:25;background:var(--page)}
+.hcorner{flex:0 0 var(--gut);position:sticky;left:0;z-index:3;background:var(--page);
+border-bottom:1px solid var(--rule2)}
+.dn:nth-child(2){border-top-left-radius:10px}
+.dn:last-child{border-top-right-radius:10px}
 .dn{flex:1;text-align:center;font-size:18px;font-weight:500;letter-spacing:.16em;padding:12px 0;border-right:2px solid var(--lane);border-bottom:1px solid var(--rule2)}
 .dn:last-child{border-right:0}
 .dn.we{background:#ece5d9}
@@ -700,9 +724,10 @@ a('<div class="tools" data-noexport="1">'
 a('</div>')
 emit_keys()
 a('</div>')
+a('<div class="topspacer" aria-hidden="true"></div>')
 
 a('<div class="wideonly">')
-a('<div class="headrow">')
+a('<div class="headrow"><div class="hcorner" aria-hidden="true"></div>')
 for i, d in enumerate(DAYNAME):
     a('<div class="dn%s" data-day="%d">%s<span class="tdy">%s</span></div>'
       % (" we" if i >= 5 else "", i, bi(d, EN_DAY[i]), bi("今天", "Today")))
@@ -993,8 +1018,8 @@ window.addEventListener('resize', function(){ measureDock(); syncRows(); layout(
 var ndock = document.getElementById('ndock');
 function measureDock(){
   var t = document.querySelector('.top');
-  document.documentElement.style.setProperty('--dockH',
-    Math.round(t.getBoundingClientRect().height) + 'px');
+  var h = Math.round(t.getBoundingClientRect().height);
+  document.documentElement.style.setProperty('--dockH', h + 'px');
 }
 // 把 dock 的星期換成第 k 片面板（k 是軌道上的實際索引）
 function setDockDay(k){
