@@ -125,9 +125,11 @@ dist/                 產物
   CI 端只要 json 是最新的，算出來就跟本機一致；寫不進去（唯讀環境）也不會壞，
   版本仍然算得出來，只是下一次沒有紀錄可對。
 - 要手動指定用 `--version 1.3`（`--version 1.0` 一樣不顯示）。
-- 署名 `.by` 在 `@media (max-width:560px)` 是隱藏的，但匯出的圖不該少版本號，
-  所以 `05-export-mode.css` 用 `.sheet.flat .hd .by{display:block}` 蓋回來
-  （media query 不加權重，選擇器帶 `.sheet.flat` 就贏）。
+- **署名 `.by` 一律顯示，手機也不藏。** `07-header.css` 原本在
+  `@media (max-width:560px)` 把它 `display:none`（純粹為了省標題列高度），
+  但署名與版本號是課表的落款，手機看的人跟匯出的圖都不該少這行。
+  拿掉之後標題列在 375px 高 105px（多一行），`--dockH` 是 `measureDock()`
+  量出來的，釘住的星期列與 `.topspacer` 會自己跟上，不必手動調。
 
 ## 匯出圖片：直式要留住時間軸
 
