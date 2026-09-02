@@ -71,9 +71,11 @@ with sync_playwright() as p:
     (ctx.add_init_script(FAKEINIT) if FAKEINIT else None)
     pg=ctx.new_page()
     pg.goto(URL); pg.wait_for_timeout(3500)
+    total=0
     for m in ("zh","en"):
         pg.click("#lang button[data-l=%s]"%m); pg.wait_for_timeout(700)
         r=pg.evaluate(JS)
+        total+=len(r)
         print(m, "問題數:", len(r))
         seen=set()
         for o in r:
@@ -81,3 +83,5 @@ with sync_playwright() as p:
             if k in seen: continue
             seen.add(k); print("   ", o)
     b.close()
+# 通過標準是 0；非 0 就讓 CI／run.sh 停下來
+sys.exit(1 if total else 0)

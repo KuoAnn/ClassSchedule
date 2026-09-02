@@ -76,3 +76,6 @@ for k in sorted(set(list(want)+list(got))):
     print("  %-14s CSV %-3s 卡片 %-3s%s" % (k, want.get(k,0), got.get(k,0), mark))
 print("色票不符：%d 筆" % len(bad))
 for x in bad[:20]: print("   ", x)
+# 通過標準是 0，且卡片堂數要與 CSV 一致
+miss = [k for k in set(list(want)+list(got)) if want.get(k) != got.get(k)]
+sys.exit(1 if (bad or miss) else 0)

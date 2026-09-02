@@ -62,8 +62,12 @@ with sync_playwright() as p:
     (ctx.add_init_script(FAKEINIT) if FAKEINIT else None)
     pg=ctx.new_page()
     pg.goto(URL); pg.wait_for_timeout(3500)
+    total=0
     for m in ("zh","en"):
         pg.click("#lang button[data-l=%s]"%m); pg.wait_for_timeout(700)
         r=pg.evaluate(JS); print(m, "WCAG 不合格:", r["n"], "（已結束卡片豁免 %d 個節點）" % r["skipped"])
+        total+=r["n"]
         for o in r["u"][:10]: print("   ", o)
     b.close()
+# 通過標準是 0；非 0 就讓 CI／run.sh 停下來
+sys.exit(1 if total else 0)
