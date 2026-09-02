@@ -21,10 +21,17 @@
    卡片裡的行距與內距在螢幕上是為了好點擊，印成圖只是白費高度。
    卡片變矮之後 syncRows() 寫在 .hrow／.ngc 上的 inline 高度就過大了，
    所以 08-export.js 掛上 npack 之後會再算一次（還原時也要再算回來） */
-.sheet.npack .lc{padding:5px 8px;margin-bottom:4px;border-radius:6px}
+/* line-height 要壓在 .lc 上：時段與老師併成一行之後，那一行是「匿名區塊」，
+   行高吃的是 .lc 繼承來的 strut（body 的 1.5 → 24px），不是 .t／.m 自己的 16.74px。
+   不壓的話併行只省了半行，白做。.nr／.bt 是 flex 容器、不吃 strut，不受影響 */
+.sheet.npack .lc{padding:5px 8px;margin-bottom:4px;border-radius:6px;line-height:16.8px}
 .sheet.npack .lc .nr{gap:6px}
 .sheet.npack .lc .n{line-height:1.18}
 .sheet.npack .lc .t,.sheet.npack .lc .m{line-height:1.24}
+/* 時段與老師併成一行：兩個都是短字串（「12:15-13:15」＋「Roushan 印 EN」），
+   各占一行等於白送一行高度。放不下時老師會自己折到第二行，就是原本的樣子 */
+.sheet.npack .lc .t,.sheet.npack .lc .m{display:inline}
+.sheet.npack .lc .m{margin-left:9px}
 .sheet.npack .lc .bt{margin-top:3px;gap:4px}
 .sheet.npack .lc .bt:empty{display:none}
 .sheet.npack .hrow{padding-top:4px}
