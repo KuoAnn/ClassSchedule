@@ -35,7 +35,8 @@ python3 scripts/build.py \
 
 ## 每月更新流程
 
-1. 把新的一份 CSV 放進 `data/`（格式見 `data/template.csv`）
+1. 把新的一份 CSV 放進 `data/`（格式見 `data/template.csv`；
+   要讓 AI 幫你把課表轉成 CSV，直接複製 [`data/csv-prompt.md`](data/csv-prompt.md)）
 2. `python3 scripts/build.py`
 3. 看終端機印出的 **WARN**，確認資料問題
 4. 跑檢查：
@@ -66,6 +67,34 @@ src/icons/*.svg     內嵌圖示（版型切換、下載、翻頁、早／午／
 - `13-liff.css` / `09-liff.js` 是 LINE WebView 專用的補丁，放在最後（見下節）
 
 單獨改版面時，直接編輯 `src/` 下的檔案再重跑 build 即可，不需要碰 Python。
+
+## 課表 CSV
+
+固定 12 欄，順序不可調換：
+
+```text
+星期,開始時間,結束時間,課程名稱,師資名稱,師資國籍,教學語系,分類,級別,異動類型,異動老師,異動日期
+```
+
+| 欄位 | 說明 |
+|---|---|
+| 師資名稱／師資國籍／教學語系 | 名字只放名字；國籍是一個字（`印`＝印度），語系如 `EN`，未設定就不顯示 |
+| 分類 | 原文照抄，不限於現有分類；沒定義過的會自動配色並提醒補進 `scripts/spec.py` |
+| 級別 | `初`／`中`／`高`，未設定不顯示（`初` 是預設級別，只進 aria-label） |
+| 異動類型／異動老師／異動日期 | 多筆用半形分號 `;` 分隔，**依位置配成一組**；`暫停` 不取用異動老師 |
+
+```text
+異動類型  代課 ; 暫停        →  9/7 由 Jen 代課
+異動老師  Jen  ;                 9/28 暫停
+異動日期  9/7  ; 9/28
+```
+
+同一筆異動有多天，日期用 `、` 串在同一段（`9/5、9/26`）。
+分類、國籍、語系、級別的譯名與色票都集中在 [`scripts/spec.py`](scripts/spec.py)，
+`build.py` 與 `catcheck.py` 讀同一份。
+
+要讓 AI 幫忙把手上的課表轉成這份 CSV，複製 [`data/csv-prompt.md`](data/csv-prompt.md)
+裡的提示詞連同課表一起丟給它。
 
 ## 檢查腳本
 
@@ -151,10 +180,11 @@ JS 端用 `inLINE()` 讀同一個旗標。
 
 ```text
 src/                  版面範本資源（HTML／CSS／JS／SVG）
+scripts/spec.py       匯入格式規格表（欄位、分類色票、師資標註、級別、課名對照）
 scripts/build.py      產生器：讀 CSV ＋ 內嵌 src/ → 單一 HTML
 scripts/run.sh        產檔 + 四項檢查
 scripts/checks/       三支驗證腳本
-data/                 課程 CSV 與空白範本
+data/                 課程 CSV、空白範本、產 CSV 的提示詞
 dist/                 產出的 HTML（git 不追蹤內容）
 AGENTS.md             主要規格來源（AI 接手前必讀）
 CLAUDE.md             Claude 轉址入口

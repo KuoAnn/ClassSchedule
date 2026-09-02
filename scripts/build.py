@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import csv, html, re, colorsys, sys, json, hashlib
 
+import spec
+
 import argparse, os, glob
 from urllib.parse import quote
 
@@ -61,80 +63,16 @@ SC = 1.7
 GAPH = 20.0
 GAPMIN = 15
 
-PALETTE = {
-    "伸展": "#4792B8",
-    "肌耐力/核心/快節奏": "#B4747C",
-    "放鬆": "#47904C",
-    "按摩": "#B49F74",
-    "熱課程": "#A76B44",
-    "姿勢正位": "#6C82C0",
-    "高難度": "#9A3C87",
-    "阿斯坦加": "#9BBD56",
-    "瑜伽輪": "#7E6FB8",
-    "陰瑜伽": "#42A99B",
-    "寰宇系列": "#3C3C9A",
-    "付費課": "#9A3C87",
-}
-ORDER = ["伸展", "肌耐力/核心/快節奏", "放鬆", "按摩", "熱課程", "姿勢正位",
-         "阿斯坦加", "瑜伽輪", "陰瑜伽", "寰宇系列", "付費課"]
-
 BANDS = [(0, 12 * 60, "早"), (12 * 60, 17 * 60, "午"), (17 * 60, 24 * 60, "晚")]
 DW = ["一", "二", "三", "四", "五", "六", "日"]
 DAYNAME = ["週一", "週二", "週三", "週四", "週五", "週六", "週日"]
 
-EN_CAT = {
-    "伸展": "Stretch", "肌耐力/核心/快節奏": "Strength / Core / Pace",
-    "放鬆": "Relax", "按摩": "Massage", "熱課程": "Hot", "姿勢正位": "Alignment",
-    "高難度": "Advanced", "阿斯坦加": "Ashtanga", "瑜伽輪": "Yoga Wheel",
-    "陰瑜伽": "Yin", "寰宇系列": "Universal Series", "付費課": "Paid Class",
-}
-NAME_FIX = {"基礎瑜伽 Fundamental": "基礎瑜伽", "瑜伽提斯 Yoga Tone": "瑜伽提斯",
-            "墊上＿皮拉提斯": "墊上皮拉提斯",
-            "豪宇入門": "寰宇入門", "豪宇瑜伽": "寰宇瑜伽",
-            "慢流輪": "慢流暢"}
-# 「瑜伽」二字一律省略，除下列名稱（去掉後語意不成立）
-CAT_FIX = {"豪宇系列": "寰宇系列", "高難度": "肌耐力/核心/快節奏"}
-CAT_NOTE = {"付費課": ("（另加 <b>$350</b>）", " (<b>extra $350</b>)")}
-# 課名本身即等於分類，標籤與色票都省略（顏色仍保留）
-NO_CAT_TAG = {"陰瑜伽", "瑜伽輪"}   # 卡片不上分類標籤
-NO_LEGEND = set()                             # 全部分類都列入色票
-HIGHLIGHT = set()                             # 目前無需加強的分類
-CAT_SHORT = {
-    "伸展": ("伸展", "Stretch"), "肌耐力/核心/快節奏": ("力", "Core"),
-    "放鬆": ("放鬆", "Relax"), "按摩": ("按摩", "Massage"), "熱課程": ("熱", "Hot"),
-    "姿勢正位": ("正位", "Align"),     "阿斯坦加": ("阿斯", "Asht."), "瑜伽輪": ("輪", "Wheel"), "陰瑜伽": ("陰", "Yin"),
-    "寰宇系列": ("寰宇", "Univ."), "付費課": ("付費", "Paid"),
-}
-KEEP_YOGA = {"陰瑜伽", "瑜伽輪", "瑜伽提斯"}
+# 分類、師資標註、級別、課名對照都在 scripts/spec.py —— 加一個新分類或新國籍
+# 只要改那一份，這裡不用動。沒定義過的值也產得出來（自動配色／照抄原文），
+# 只是會多一行 WARN 提醒補譯名。
+NO_LEGEND = set()    # 全部分類都列入色票
+HIGHLIGHT = set()    # 目前無需加強的分類
 
-
-def simplify(nm):
-    if nm in KEEP_YOGA:
-        return nm
-    out = nm.replace("瑜伽", "").strip()
-    return out or nm
-
-
-EN_NAME = {
-    "壁繩瑜伽": "Rope Wall Yoga", "瑜伽基礎": "Yoga Basics", "流動": "Flow",
-    "伸展瑜伽": "Stretch Yoga", "頌缽療癒": "Singing Bowl",
-    "瑜伽伸展": "Yoga Stretch", "瑜伽療法": "Yoga Therapy", "哈達瑜伽": "Hatha Yoga",
-    "瑜伽輪": "Yoga Wheel", "阿斯坦加瑜伽": "Ashtanga Yoga", "筋膜瑜伽": "Fascia Yoga",
-    "瑜伽修復": "Restorative", "和緩瑜伽": "Gentle Yoga", "瑜伽舒眠": "Yoga Nidra",
-    "墊上皮拉提斯": "Mat Pilates", "慢流暢": "Slow Flow", "熱和緩": "Hot Gentle",
-    "熱流動": "Hot Flow", "溫基礎": "Warm Basics", "陰瑜伽": "Yin Yoga",
-    "瑜伽提斯": "Yogilates", "輕流動": "Light Flow", "輔具瑜伽": "Props Yoga",
-    "火箭入門": "Rocket Intro", "熱伸展": "Hot Stretch", "椅子瑜伽": "Chair Yoga",
-    "水晶缽放鬆": "Crystal Bowl", "陰陽瑜伽": "Yin Yang Yoga",
-    "基礎瑜伽": "Fundamental", "阿斯坦加": "Ashtanga",
-    "芳療瑜伽": "Aroma Yoga", "放鬆延展": "Relax & Stretch", "哈達基礎": "Hatha Basics",
-    "瑜伽提斯 Yoga Tone": "Yoga Tone", "寰宇入門": "Universal Intro",
-    "肌筋膜按摩": "Myofascial", "筋膜舒壓伸展": "Fascia Release",
-    "尼古瑪瑜伽": "Niguma Yoga", "熱哈達": "Hot Hatha", "火箭瑜伽": "Rocket Yoga",
-    "原力核心": "Core Power", "寰宇瑜伽": "Universal Yoga", "溫和緩": "Warm Gentle",
-}
-ALWAYS_EN = {"JAI", "Roushan"}   # 印籍且英文授課，資料中部分列漏標（EN）
-EN_TEACHER = {"丁丁": "Ding-Ding", "柳川": "Liu-Chuan", "錦潭": "Jin-Tan", "吳柏樵": "Wu Po-Chiao"}
 EN_MONTH = ["January", "February", "March", "April", "May", "June", "July",
             "August", "September", "October", "November", "December"]
 EN_BRANCH = "Guting Studio"
@@ -185,14 +123,10 @@ def resolve_version():
     return "1.%d" % n, n > 0
 
 
-VERSION, SHOW_VERSION = resolve_version()
 EN_DAY = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 ICON = {"早": icon("band-am"), "午": icon("band-mid"), "晚": icon("band-pm")}
 
 EN_BAND = {"早": "AM", "午": "MID", "晚": "PM"}
-EN_LV = {"中": "Int", "高": "Adv"}
-LV_ZH = {"中": "中等", "高": "進階"}
-LV_STYLE = {"中": ("#e6ecdf", "#4c6636"), "高": ("#f6e2d8", "#a04a22")}
 
 warn = []
 NAMEMAP = {}
@@ -210,40 +144,101 @@ def mn(t):
     return int(h) * 60 + int(m)
 
 
-rows = list(csv.DictReader(open(SRC, encoding="utf-8-sig")))
+def multi(v):
+    """欄位內的多筆值：以半形分號分隔（全形的也收，打字時很容易按錯）"""
+    return [x.strip() for x in re.split("[%s]" % spec.CHANGE_SEP, v or "")]
+
+
+def read_changes(r, where):
+    """異動：類型／老師／日期三欄依「同一個位置」配成一組，一列可以有多組。
+
+    分成三欄而不是把「代課／暫停」寫成一格，是因為一組異動本來就有三個屬性；
+    併成一格之後就得靠「第一個日期是代課、其餘是暫停」這種位置慣例去猜，
+    多加一種異動類型就會全部重來。
+    """
+    kinds, whos, dates = (multi(r[k]) for k in ("異動類型", "異動老師", "異動日期"))
+    if not any(kinds):
+        for col, vals in (("異動老師", whos), ("異動日期", dates)):
+            if any(vals):
+                warn.append("沒有異動類型卻填了%s：%s" % (col, where))
+        return []
+    if len(whos) > len(kinds) or len(dates) > len(kinds):
+        warn.append("異動筆數不一致（類型 %d／老師 %d／日期 %d）：%s"
+                    % (len(kinds), len(whos), len(dates), where))
+    out = []
+    for i, kind in enumerate(kinds):
+        who = whos[i] if i < len(whos) else ""
+        raw = dates[i] if i < len(dates) else ""
+        ds = [x for x in re.split("[%s]" % spec.DATE_SEP, raw) if x]
+        if kind not in spec.KINDS:
+            warn.append("異動類型無法辨識：%s（%s）" % (kind, where))
+            continue
+        if kind == spec.KIND_OFF and who:
+            warn.append("異動類型為暫停但填了異動老師：%s（已依「暫停」處理）" % where)
+            who = ""
+        if kind == spec.KIND_SUB and not who:
+            warn.append("代課沒有填異動老師：%s" % where)
+        if not ds:
+            warn.append("異動沒有填日期：%s" % where)
+        out.append({"kind": kind, "who": who, "dates": ds})
+    return out
+
+
+_reader = csv.DictReader(open(SRC, encoding="utf-8-sig"))
+rows = list(_reader)
+_cols = [c.strip() for c in (_reader.fieldnames or [])]
+# 缺欄位直接停（跟 index.html 的 {{…}} 一樣不靜默略過）；多的只忽略並提醒
+_missing = [c for c in spec.COLUMNS if c not in _cols]
+if _missing:
+    raise SystemExit("CSV 缺欄位：%s（欄位規格見 data/template.csv）" % "、".join(_missing))
+for c in _cols:
+    if c and c not in spec.COLUMNS:
+        warn.append("CSV 有沒用到的欄位（已忽略）：%s" % c)
+
+# 版本要等 CSV 驗過欄位才算：resolve_version() 會把沒見過的指紋寫回 versions.json，
+# 放在驗證之前的話，連「格式不對、根本產不出檔」的那一次也會佔掉一個版本號
+VERSION, SHOW_VERSION = resolve_version()
+
+SEEN_CATS = []
 S = [[] for _ in DW]
 for r in rows:
     d = r["星期"].strip()
     di = DW.index(d) if d in DW else (int(d) - 1 if d.isdigit() else None)
     if di is None:
         warn.append("星期無法辨識：%s" % r); continue
-    cat = CAT_FIX.get(r["分類"].strip(), r["分類"].strip())
-    if cat not in PALETTE:
-        warn.append("分類未定義：%s（%s）" % (cat, r["課程名稱"]))
-    kind = r["異動類型"].strip()
-    who = r["代課老師"].strip()
-    dates = [x for x in re.split("[、,]", r["異動日期"].strip()) if x]
-    if kind == "暫停" and who:
-        warn.append("異動類型為暫停但填了代課老師：%s %s %s（已依「暫停」處理）"
-                    % (d, r["開始時間"], r["課程名稱"]))
-        who = ""
+    where = "%s %s %s" % (d, r["開始時間"].strip(), r["課程名稱"].strip())
+    cs = spec.cat(r["分類"])
+    if not cs["known"]:
+        warn.append("分類未定義，已自動配色 %s：%s（%s）" % (cs["color"], cs["name"], where))
+    if cs["name"] not in SEEN_CATS:
+        SEEN_CATS.append(cs["name"])
     if mn(r["結束時間"]) <= mn(r["開始時間"]):
         warn.append("跨日或時間顛倒：%s %s" % (r["課程名稱"], r["開始時間"]))
         continue
-    tn = r["老師"].strip()
-    TMAP.setdefault(re.sub(r"（[^）]*）", "", tn).strip(), set()).add(tn)
-    raw = NAME_FIX.get(r["課程名稱"].strip(), r["課程名稱"].strip())
-    if raw not in EN_NAME:
+    tn = r["師資名稱"].strip()
+    nat, lang = spec.nation(r["師資國籍"]), spec.language(r["教學語系"])
+    lv = spec.level(r["級別"])
+    for got, col in ((nat, "師資國籍"), (lang, "教學語系"), (lv, "級別")):
+        if got and not got["known"]:
+            warn.append("%s未定義，已照抄原文：%s（%s）" % (col, got["value"], where))
+    TMAP.setdefault(tn, set()).add((nat["value"] if nat else "",
+                                    lang["value"] if lang else ""))
+    raw = spec.NAME_FIX.get(r["課程名稱"].strip(), r["課程名稱"].strip())
+    if raw not in spec.EN_NAME:
         warn.append("缺英文課名：%s" % raw)
-    en = EN_NAME.get(raw, raw)
-    zh = simplify(raw)
+    en = spec.EN_NAME.get(raw, raw)
+    zh = spec.simplify(raw)
     NAMEMAP.setdefault(zh, set()).add(raw)
     S[di].append({
         "s": r["開始時間"].strip(), "e": r["結束時間"].strip(),
         "n": zh, "en": en, "di": di,
-        "t": r["老師"].strip(),
-        "c": cat, "lv": r["級別"].strip(), "kind": kind, "who": who, "dates": dates,
+        "t": tn, "nat": nat, "lang": lang,
+        "c": cs["name"], "lv": lv, "ch": read_changes(r, where),
     })
+
+# 色票列的順序：先照 spec.CATS 的排法，新分類接在後面（依 CSV 出現順序）
+ORDER = ([c for c in spec.CATS if c in SEEN_CATS]
+         + [c for c in SEEN_CATS if c not in spec.CATS])
 
 
 def build_axis():
@@ -384,41 +379,28 @@ def esc(s):
     return html.escape(s, quote=False)
 
 
-def teacher_html(name):
-    tags = []
-    if "印籍" in name:
-        tags.append(("印", "IN"))
-    if re.search(r"（EN）|\(EN\)", name):
-        tags.append(("EN", "EN"))
-    base = re.sub(r"（[^）]*）|\([^)]*\)", "", name).strip()
-    if base in ALWAYS_EN and not any(t[0] == "EN" for t in tags):
-        tags.append(("EN", "EN"))
-    out = bi(esc(base), esc(EN_TEACHER.get(base, base)))
-    for z, e in tags:
-        out += ' <i class="tg">%s</i>' % bi(z, e)
+def teacher_html(it):
+    """師資：名稱＋國籍／語系小標。三個欄位分開存，未設定就整顆標籤不出現。"""
+    out = bi(esc(it["t"]), esc(spec.EN_TEACHER.get(it["t"], it["t"])))
+    for got in (it["nat"], it["lang"]):
+        if got:
+            out += ' <i class="tg">%s</i>' % bi(esc(got["tag"][0]), esc(got["tag"][1]))
     return out
 
 
 def note_html(it):
-    k, who, ds = it["kind"], it["who"], it["dates"]
-    if not k:
-        return ""
-    whoe = esc(EN_TEACHER.get(who, who))
-    who = esc(who)
-    dd = "・".join(ds)
+    """異動小標：一筆一顆，照 CSV 的順序排"""
     chips = []
-    if k == "代課":
-        chips.append('<span class="sub">%s</span>'
-                     % bi("%s %s 代" % (dd, who), "%s %s Sub" % (dd, whoe)))
-    elif k == "暫停":
-        chips.append('<span class="stop">%s</span>' % bi("%s 暫停" % dd, "%s Off" % dd))
-    else:
-        d0 = ds[0] if ds else ""
-        rest = "・".join(ds[1:])
-        chips.append('<span class="sub">%s</span>'
-                     % bi("%s %s 代" % (d0, who), "%s %s Sub" % (d0, whoe)))
-        chips.append('<span class="stop">%s</span>' % bi("%s 暫停" % rest, "%s Off" % rest))
-    return '<div class="x">%s</div>' % "".join(chips)
+    for ch in it["ch"]:
+        dd = "・".join(ch["dates"])
+        if ch["kind"] == spec.KIND_SUB:
+            who = esc(ch["who"])
+            whoe = esc(spec.EN_TEACHER.get(ch["who"], ch["who"]))
+            chips.append('<span class="sub">%s</span>'
+                         % bi("%s %s 代" % (dd, who), "%s %s Sub" % (dd, whoe)))
+        else:
+            chips.append('<span class="stop">%s</span>' % bi("%s 暫停" % dd, "%s Off" % dd))
+    return ('<div class="x">%s</div>' % "".join(chips)) if chips else ""
 
 
 def emit_keys():
@@ -427,10 +409,11 @@ def emit_keys():
     a('<div class="keys" role="group" aria-label="%s">'
       % ("課程分類篩選 / Filter by category"))
     for c in present:
-        sz, se = CAT_SHORT.get(c, (c, c))
-        fz, fe = esc(c), esc(EN_CAT.get(c, c))
-        nz, ne = CAT_NOTE.get(c, ("", ""))
-        if c in NO_CAT_TAG:
+        cs = spec.cat(c)
+        sz, se = cs["short"]
+        fz, fe = esc(c), esc(cs["en"])
+        nz, ne = cs["note"]
+        if not cs["tag"]:
             short, tz, te = bi(fz, fe), nz, ne
         else:
             short = bi(esc(sz), esc(se))
@@ -438,7 +421,7 @@ def emit_keys():
             te = (fe if se != fe else '') + ne
         tail = ('<u>%s</u>' % bi(tz, te)) if (tz or te) else ''
         a('<button class="key" data-cat="%s"><i style="background:%s"></i>%s%s</button>' % (
-            esc(c), PALETTE.get(c, "#9a938b"), short, tail))
+            esc(c), cs["color"], short, tail))
     a('<button class="clear" id="clear" data-noexport="1">%s</button>' % bi("顯示全部", "Show all"))
     a('</div>')
 
@@ -515,9 +498,8 @@ a('</div><div class="cols">')
 
 def card_parts(it):
     """回傳卡片內容（寬版與窄版共用）"""
-    if it["c"] not in PALETTE:
-        raise SystemExit("分類沒有對應色票：%s（%s）" % (it["c"], it["n"]))
-    base = PALETTE[it["c"]]
+    cs = spec.cat(it["c"])
+    base = cs["color"]
     hi = it["c"] in HIGHLIGHT
     cardbg = mix(base, "#ffffff", 0.74 if hi else 0.88)
     edge = mix(base, "#ffffff", 0.6)
@@ -534,53 +516,52 @@ def card_parts(it):
     else:
         time = ('<div class="t"><span class="hh">%s–%s</span>'
                 ' <i class="du">(%d)</i></div>' % (it["s"], it["e"], dur))
-    if it["lv"] in EN_LV:
-        lvbg, lvfg = LV_STYLE[it["lv"]]
+    # 級別：未設定不顯示；設定成「預設級別」（spec.LEVELS 裡 tag=None 的那些）
+    # 也不上標籤 —— aria-label 仍念得出來，但卡片上印預設值只是雜訊。
+    lvt = it["lv"]["tag"] if it["lv"] else None
+    if lvt:
+        lvbg, lvfg = it["lv"]["style"]
         lv = ('<i class="lv" style="background:%s;color:%s">%s</i>'
-              % (lvbg, checked(fit(lvfg, lvbg), lvbg, "難度標籤 " + LV_ZH[it["lv"]]),
-                 bi(LV_ZH[it["lv"]], EN_LV[it["lv"]])))
+              % (lvbg, checked(fit(lvfg, lvbg), lvbg, "難度標籤 " + lvt[0]),
+                 bi(esc(lvt[0]), esc(lvt[1]))))
     else:
         lv = ""
-    who = '<div class="m">%s</div>' % teacher_html(it["t"])
+    who = '<div class="m">%s</div>' % teacher_html(it)
     note = note_html(it)
-    cz, ce = CAT_SHORT.get(it["c"], (it["c"], it["c"]))
+    cz, ce = cs["short"]
     chipbg = mix(base, "#ffffff", 0.52 if hi else 0.72)
-    if it["c"] in NO_CAT_TAG:
+    if not cs["tag"]:
         cg = ''
     else:
         cg = ('<span class="cg" style="color:%s;background:%s">%s</span>'
               % (checked(fit(mix(base, "#241F1A", 0.34), chipbg), chipbg, "分類標籤 " + cz),
                  chipbg, bi(esc(cz), esc(ce))))
-    LVFULL = {"初": ("初級", "Beginner"), "中": ("中等", "Intermediate"),
-              "高": ("進階", "Advanced")}
-    lvz, lve = LVFULL.get(it["lv"], (it["lv"], it["lv"]))
-    tbase = re.sub(r"（[^）]*）|\([^)]*\)", "", it["t"]).strip()
-    tz = tbase
-    te = EN_TEACHER.get(tbase, tbase)
-    if "印籍" in it["t"]:
-        tz += "（印籍）"
-        te += " (Indian)"
-    if re.search(r"（EN）|\(EN\)", it["t"]) or tbase in ALWAYS_EN:
-        tz += "，英文授課"
-        te += ", taught in English"
+    lvz, lve = it["lv"]["full"] if it["lv"] else ("", "")
+    tz = it["t"]
+    te = spec.EN_TEACHER.get(it["t"], it["t"])
+    if it["nat"]:
+        tz += "（%s）" % it["nat"]["full"][0]
+        te += " (%s)" % it["nat"]["full"][1]
+    if it["lang"]:
+        tz += "，" + it["lang"]["full"][0]
+        te += ", " + it["lang"]["full"][1]
     nz = ne = ""
-    if it["kind"] == "代課":
-        nz = "，%s 由 %s 代課" % ("・".join(it["dates"]), it["who"])
-        ne = ", substitute %s on %s" % (it["who"], "・".join(it["dates"]))
-    elif it["kind"] == "暫停":
-        nz = "，%s 暫停" % "・".join(it["dates"])
-        ne = ", cancelled on %s" % "・".join(it["dates"])
-    elif it["kind"]:
-        d0 = it["dates"][0] if it["dates"] else ""
-        rest = "・".join(it["dates"][1:])
-        nz = "，%s 由 %s 代課，%s 暫停" % (d0, it["who"], rest)
-        ne = ", substitute %s on %s, cancelled on %s" % (it["who"], d0, rest)
+    for ch in it["ch"]:
+        dd = "・".join(ch["dates"])
+        if ch["kind"] == spec.KIND_SUB:
+            nz += "，%s 由 %s 代課" % (dd, ch["who"])
+            ne += ", substitute %s on %s" % (ch["who"], dd)
+        else:
+            nz += "，%s 暫停" % dd
+            ne += ", cancelled on %s" % dd
     dz = DAYNAME[it["di"]]
     de_ = EN_DAY[it["di"]]
-    labz = "%s %s，%s 至 %s，%s，%s，%s%s" % (
-        dz, it["n"], it["s"], it["e"], tz, it["c"], lvz, nz)
-    labe = "%s %s, %s to %s, %s, %s, %s%s" % (
-        de_, it["en"], it["s"], it["e"], te, EN_CAT.get(it["c"], it["c"]), lve, ne)
+    labz = "%s %s，%s 至 %s，%s，%s%s%s" % (
+        dz, it["n"], it["s"], it["e"], tz, it["c"],
+        ("，" + lvz) if lvz else "", nz)
+    labe = "%s %s, %s to %s, %s, %s%s%s" % (
+        de_, it["en"], it["s"], it["e"], te, cs["en"],
+        (", " + lve) if lve else "", ne)
     return dict(base=base, hi=hi, cardbg=cardbg, edge=edge, name=name, time=time,
                 lv=lv, who=who, note=note, cg=cg,
                 labz=esc(labz.replace('"', '')), labe=esc(labe.replace('"', '')))
@@ -594,7 +575,7 @@ for day in S:
         top = ypos(mn(it["s"])) + 2
         hh = ypos(mn(it["e"])) - ypos(mn(it["s"])) - 4
         cls = ("ev" + (" nar" if n > 1 else "")
-               + (" hi" if p["hi"] else "") + (" lvd" if it["lv"] in EN_LV else ""))
+               + (" hi" if p["hi"] else "") + (" lvd" if p["lv"] else ""))
         a('<div class="%s" role="group" aria-label="%s" data-lab-en="%s" data-cat="%s" data-base="%s" data-start="%d" data-end="%d" style="top:%.1fpx;height:%.1fpx;left:calc(%.4f%% + 3px);width:calc(%.4f%% - 6px);background:%s;border-color:%s;border-left-color:%s">'
           % (cls, p["labz"], p["labe"], esc(it["c"]), p["base"], mn(it["s"]), mn(it["e"]),
              top, hh, ci * 100.0 / n, 100.0 / n,
@@ -607,35 +588,31 @@ for day in S:
 a('</div></div></div>')
 a('</div>')
 
-# ---------- 窄版：以小時列跨日對齊，空班留白 ----------
-HOURS = sorted({mn(x["s"]) // 60 for day in S for x in day})
-BAND_AT = {}
-for bs, be, blb in BANDS:
-    for h in HOURS:
-        if bs <= h * 60 < be:
-            BAND_AT.setdefault(blb, h)
-BAND_OF = {h: lb for lb, h in BAND_AT.items()}
+# ---------- 窄版：以早／午／晚三段跨日對齊，段內各日自己緊密排列 ----------
+# 對齊單位是「段」不是「小時」。逐時對齊會在空堂處留下大片留白（週一 2900px），
+# 完全不對齊又會讓左邊那條七天共用的時間軸標錯時段 —— 用段當單位剛好兩者兼顧：
+# 段是七天共用的座標（時間軸只標早／午／晚，一定對得上），段內誰有幾堂互不影響。
+# 段內不再有空的小時列，所以卡片是連續往下排的。
+NBANDS = [(bs, be, lb) for bs, be, lb in BANDS
+          if any(bs <= mn(x["s"]) < be for day in S for x in day)]
 
 a('<div class="ndock narrowonly" id="ndock" data-noexport="1" aria-hidden="true">'
   '<div class="ndockgut"></div>'
   '<div class="ndockclip"><div class="ndockin" id="ndockin"></div></div></div>')
 a('<div class="nlist narrowonly">')
 a('<div class="ngut" id="ngut"><div class="ngc head"></div>')
-for h in HOURS:
-    lb = BAND_OF.get(h)
-    a('<div class="ngc" data-h="%d">%s<b>%02d:00</b></div>'
-      % (h,
-         ('<span class="gb">%s%s</span>' % (ICON[lb], bi(lb, EN_BAND[lb]))) if lb else '',
-         h))
+for bs, be, lb in NBANDS:
+    a('<div class="ngc" data-b="%s"><span class="gb">%s%s</span></div>'
+      % (EN_BAND[lb], ICON[lb], bi(lb, EN_BAND[lb])))
 a('</div>')
 a('<div class="ncar"><div class="ntrack" id="ntrack">')
 for di, day in enumerate(S):
     a('<section class="dgrp" data-day="%d"><h3 class="dhd">'
       '<span class="dday">%s<i class="tdy">%s</i></span></h3>'
       % (di, bi(DAYNAME[di], EN_DAY[di]), bi("今天", "Today")))
-    for h in HOURS:
-        g = sorted([x for x in day if mn(x["s"]) // 60 == h], key=lambda x: mn(x["s"]))
-        a('<div class="hrow%s" data-h="%d">' % ("" if g else " empty", h))
+    for bs, be, lb in NBANDS:
+        g = sorted([x for x in day if bs <= mn(x["s"]) < be], key=lambda x: mn(x["s"]))
+        a('<div class="hrow%s" data-b="%s">' % ("" if g else " empty", EN_BAND[lb]))
         for it in g:
             p = card_parts(it)
             a('<article class="lc%s" aria-label="%s" data-lab-en="%s" data-cat="%s" data-start="%d" data-end="%d" style="background:%s;border-color:%s;border-left-color:%s">'
@@ -685,7 +662,9 @@ open(OUT, "w", encoding="utf-8").write(PAGE)
 print("wrote", OUT, "grid", int(GH), "classes", sum(len(d) for d in S))
 for k, v in sorted(TMAP.items()):
     if len(v) > 1:
-        warn.append("老師標註不一致：%s ← %s" % (k, "／".join(sorted(v))))
+        # 同一位老師在不同列填了不同的國籍／語系，卡片上的小標就會忽有忽無
+        warn.append("師資標註不一致：%s ← %s"
+                    % (k, "／".join("%s+%s" % (n or "－", g or "－") for n, g in sorted(v))))
 for k, v in sorted(NAMEMAP.items()):
     if len(v) > 1:
         warn.append("簡化後同名：%s ← %s" % (k, "／".join(sorted(v))))

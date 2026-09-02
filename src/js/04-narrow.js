@@ -178,13 +178,15 @@ function syncRows(){
     hd = Math.max(hd, el.getBoundingClientRect().height);
   });
   Array.prototype.forEach.call(heads, function(el){ el.style.height = hd + 'px'; });
-  Array.prototype.forEach.call(gut.querySelectorAll('.ngc[data-h]'), function(g){
-    hs.push(g.dataset.h);
+  Array.prototype.forEach.call(gut.querySelectorAll('.ngc[data-b]'), function(g){
+    hs.push(g.dataset.b);
   });
   head.style.height = hd + 'px';
+  // 對齊單位是早／午／晚三段，不是小時：段是七天共用的座標（左邊的時間軸只標段，
+  // 一定對得上），段內各日自己緊密排列，空堂不再逐時留白
   hs.forEach(function(h){
-    var rows = track.querySelectorAll('.hrow[data-h="' + h + '"]');
-    var g = gut.querySelector('.ngc[data-h="' + h + '"]');
+    var rows = track.querySelectorAll('.hrow[data-b="' + h + '"]');
+    var g = gut.querySelector('.ngc[data-b="' + h + '"]');
     var mx = 0;
     Array.prototype.forEach.call(rows, function(r){ r.style.height = 'auto'; });
     g.style.height = 'auto';

@@ -18,8 +18,12 @@ document.getElementById('dl').addEventListener('click', function(){
   var PNG = (window.SCHEDULE && window.SCHEDULE.png) || {zh:'schedule.png', en:'schedule.png'};
   btn.disabled=true; btn.classList.add('busy'); btn.setAttribute('aria-busy','true');
   var hide=sheet.querySelectorAll('[data-noexport]');
+  // 下載的是「完整課表」：分類篩選要先解掉。留著的話沒中的課會被壓到 opacity .14，
+  // 存出來是一張半透明的殘缺課表 —— 篩選是看畫面時的工具，不是圖的內容
+  var wasPicked = picked;
   function restore(){
     hide.forEach(function(el){el.style.visibility=''});
+    if (picked !== wasPicked) { picked = wasPicked; applyFilter(); }
     sheet.classList.remove('nopast','flat','noto','weekexp','npack');
     // 先 markPast() 再 syncRows()：狀態標籤是塞進 .nr 的，會影響卡片高度，
     // 順序反了就會用缺標籤的高度去對齊，卡片被 .hrow 的 overflow 切掉
@@ -28,8 +32,11 @@ document.getElementById('dl').addEventListener('click', function(){
     btn.disabled=false; btn.classList.remove('busy'); btn.removeAttribute('aria-busy');
   }
   (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(function(){
+    if (picked !== null) { picked = null; applyFilter(); }
     fitCells();
     var nar = document.documentElement.classList.contains('nv');
+    // nopast／noto ＋ 拿掉 .stt、.st-done、.st-live：把「現在幾點、今天星期幾」
+    // 這類看畫面時才有意義的狀態全部排除，圖才是一份跟開啟時間無關的完整課表
     sheet.classList.add('nopast','flat','noto');
     document.querySelectorAll('.stt').forEach(function(c){ c.remove(); });
     document.querySelectorAll('.st-done,.st-live').forEach(function(c){

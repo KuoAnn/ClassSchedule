@@ -21,13 +21,16 @@ color:var(--ink3);border-bottom:2px solid transparent;margin-bottom:-1px}
 .ndockin .dk.on.today{border-bottom-color:#a89670}
 .ntrack.pinned .dhd{visibility:hidden}
 .ngut{flex:0 0 var(--ngut);position:relative;z-index:3;background:var(--page)}
-.ngc{border-top:1px solid var(--rule);padding-top:5px;font-size:12.5px;color:var(--ink3);
-font-variant-numeric:tabular-nums;box-sizing:border-box;overflow:hidden}
+/* 時間軸只標早／午／晚：段是七天共用的對齊單位，段內各日自己緊密排列，
+   所以標到「小時」就會指錯卡片，標到「段」永遠是對的。
+   標籤釘在段的頂端（sticky），段很高時捲到一半也還看得到自己在哪一段 */
+.ngc{border-top:1px solid var(--rule);padding-top:6px;color:var(--ink3);
+box-sizing:border-box;overflow:hidden}
 .ngc.head{border-top:0}
-.ngc b{font-weight:400;display:block}
-.ngc .gb{display:flex;align-items:center;gap:3px;color:#786a56;font-size:11.5px;
-letter-spacing:.08em;margin-bottom:1px}
-.ngc .gb .ic{width:11px;height:11px;flex:0 0 11px;display:block}
+.ngc .gb{position:sticky;top:var(--dockH,92px);display:flex;flex-direction:column;
+align-items:center;gap:2px;color:#786a56;font-size:12.5px;letter-spacing:.08em;
+font-weight:500}
+.ngc .gb .ic{width:14px;height:14px;flex:0 0 14px;display:block}
 .ncar{position:relative;flex:1;min-width:0}
 .ncar::before,.ncar::after{content:"";position:absolute;top:0;bottom:0;
 pointer-events:none;z-index:2}

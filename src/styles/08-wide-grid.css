@@ -1,7 +1,11 @@
 /* 08-wide-grid.css — 寬版星期列、時間軸與格線 */
 .headrow{display:flex;position:sticky;top:var(--dockH,92px);z-index:25;background:var(--page)}
-.hcorner{flex:0 0 var(--gut);position:sticky;left:0;z-index:3;background:var(--page);
-border-bottom:1px solid var(--rule2)}
+/* 左上角那格「不畫底線」：時間欄的第一個標籤（09:00 與早／午／晚）是
+   transform:translateY(-50%) 對齊格線的，格線就是 .gut 的上緣＝這格的下緣，
+   所以底線會正好從第一個時間的字中間穿過去。角落本來就是空的、沒有東西要跟星期
+   對齊，少一段底線不影響閱讀；星期那七格的底線由 .dn 自己畫，仍然是連續的。
+   （捲動時 .gut 的底色本來就會蓋掉這段底線 —— 見「寬版的兩條 sticky 軸」） */
+.hcorner{flex:0 0 var(--gut);position:sticky;left:0;z-index:3;background:var(--page)}
 .dn:nth-child(2){border-top-left-radius:10px}
 .dn:last-child{border-top-right-radius:10px}
 .dn{flex:1;text-align:center;font-size:18px;font-weight:500;letter-spacing:.16em;padding:12px 0;border-right:2px solid var(--lane);border-bottom:1px solid var(--rule2)}

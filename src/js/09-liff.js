@@ -22,13 +22,13 @@ function inLINE(){
   document.head.appendChild(s);
 })();
 
-// 把「現在看到的這一版」寫成網址參數：版型、語言、篩選都要帶，
-// 否則外部瀏覽器會用它自己記住的偏好，存出來的圖跟 LINE 裡看到的不一樣。
+// 把「現在看到的這一版」寫成網址參數：版型與語言要帶，否則外部瀏覽器會用它自己
+// 記住的偏好，存出來的圖跟 LINE 裡看到的不一樣。**篩選不帶** —— 下載的是完整課表，
+// 帶過去只會讓外部瀏覽器那邊多套一次又被 08-export.js 解掉，白跑一趟。
 // 只取 origin + pathname：LIFF 進來時網址可能還掛著 liff.state 之類的參數
 function exportUrl(){
   var q = ['dl=1', 'v=' + (document.documentElement.classList.contains('nv') ? 'n' : 'w'),
            'l=' + (document.getElementById('sheet').classList.contains('en') ? 'en' : 'zh')];
-  if (picked !== null) q.push('cat=' + encodeURIComponent(picked));
   return location.origin + location.pathname + '?' + q.join('&');
 }
 
