@@ -427,6 +427,7 @@ padding-left:48px;margin-right:-14px;border-bottom:0}
 bottom:-8px;width:var(--dayw);border-bottom:2px solid var(--lane)}
 .ndock.istoday .dday::after{border-bottom-color:#a89670}
 .ndock.show{display:flex}
+.ntrack.pinned .dhd{visibility:hidden}
 .ngut{flex:0 0 48px;position:relative;z-index:3;background:var(--page)}
 .ngc{border-top:1px solid var(--rule);padding-top:5px;font-size:12.5px;color:var(--ink3);
 font-variant-numeric:tabular-nums;box-sizing:border-box;overflow:hidden}
@@ -478,6 +479,7 @@ html.wv .nav{display:none}
 font-size:27px;font-weight:700;letter-spacing:.14em;
 padding-top:2px;padding-bottom:8px;border-bottom:2px solid var(--lane);
 background:var(--page)}
+.ndock:not(.show){display:none}
 .dday{position:relative;white-space:nowrap}
 .dhd .tdy,.ndock .tdy{display:none;position:absolute;left:100%;top:50%;
 transform:translateY(-50%);margin-left:11px;font-style:normal}
@@ -1055,8 +1057,14 @@ function updateDock(){
   setDockDay(vpos);
   var dockH = parseFloat(getComputedStyle(document.documentElement)
     .getPropertyValue('--dockH')) || 92;
-  var top = document.querySelector('.nlist').getBoundingClientRect().top;
-  ndock.classList.toggle('show', top < dockH - 2 && !track.classList.contains('full'));
+  // 只有面板內的標頭「整個」捲進固定列底下之後才接手，否則會同時出現兩個星期
+  var hd = (track.children[vpos] || {}).querySelector
+    ? track.children[vpos].querySelector('.dhd') : null;
+  var gone = hd ? hd.getBoundingClientRect().bottom <= dockH + 1
+                : document.querySelector('.nlist').getBoundingClientRect().top < dockH;
+  var show = gone && !track.classList.contains('full');
+  ndock.classList.toggle('show', show);
+  track.classList.toggle('pinned', show);
 }
 // 橫向捲動時即時跟隨（不等吸附結束），否則手機慣性滑動期間星期會停在舊的那天
 var swipeRaf = 0;

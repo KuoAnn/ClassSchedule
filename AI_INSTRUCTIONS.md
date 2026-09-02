@@ -234,6 +234,14 @@ FAKE_CLOCK=1 python3 checks/wcag.py   # 固定時間驗證「今天／已開始�
     （因此 `--dayw` 等變數要放在 `:root`，不能只放在 `.ntrack`）
   - 面板標頭與 dock 的內容結構必須相同（`<span class="dday">星期<i class="tdy">今天</i></span>`），
     這樣 `setDockDay` 只要直接複製 innerHTML
+  - ⚠️ **交接時機要用「面板標頭的下緣」而不是容器上緣**。
+    若用容器上緣，標頭剛滑到固定列下方時 dock 就出現，
+    但真正的標頭還完整露在下面 → 畫面同時出現兩個星期。
+    正確條件是 `hd.getBoundingClientRect().bottom <= dockH`，
+    另外加 `.ntrack.pinned .dhd{visibility:hidden}` 當保險
+  - ⚠️ 共用規則 `.dhd,.ndock{display:flex}` 寫在 `.ndock{display:none}` 後面，
+    會把隱藏狀態蓋掉導致 dock 永遠顯示。必須用 `.ndock:not(.show){display:none}`
+    這種更強的選擇器補回
   - dock 的星期必須在**滑動過程中即時跟隨**，不能等吸附結束。
     軌道的 `scroll` 事件用 rAF 節流直接算 `round(scrollLeft / step)` 換標題；
     吸附結束後的 110ms debounce 只負責 `normalize()` 與 `markCur()`。
