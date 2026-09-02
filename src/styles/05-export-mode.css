@@ -4,10 +4,13 @@
 .sheet.flat .hcorner{position:static}
 .sheet.flat .gut{position:relative}
 .sheet.flat .ndock{display:none}
-/* 單日寬在畫面上是照螢幕算的（sizeDays()），但匯出的圖不該跟著手機寬度變 —
-   同一份課表在不同手機上要匯出同一張圖，所以這裡把 --dayw 釘回固定值。
+/* 匯出的單日寬釘成 170px：跟畫面上算出來的差不多（手機實測 143～172px），
+   所以卡片的比例與換行都跟畫面一致 —— 釘成 320px 的那一版把七欄拉得很寬，
+   卡片右半邊全是空白，跟畫面上緊湊的窄欄完全不像。
+   釘住而不是直接用畫面的 --dayw，是因為那個值跟著螢幕寬跳（375px 算出 144、
+   390px 算出 152、320px 算出 246），同一份課表在不同手機會匯出差很多的圖。
    宣告在 .sheet 上才蓋得過 sizeDays() 寫在 :root 的 inline 值（自訂屬性靠繼承） */
-.sheet.weekexp{width:max-content;--dayw:320px}
+.sheet.weekexp{width:max-content;--dayw:170px}
 .sheet.weekexp .nlist,.sheet.weekexp .ncar{width:max-content}
 .sheet.weekexp .ntrack{overflow:visible;padding:0!important;justify-content:flex-start;width:max-content}
 .sheet.weekexp .dgrp.clone{display:none}
@@ -24,17 +27,12 @@
    卡片裡的行距與內距在螢幕上是為了好點擊，印成圖只是白費高度。
    卡片變矮之後 syncRows() 寫在 .hrow／.ngc 上的 inline 高度就過大了，
    所以 08-export.js 掛上 npack 之後會再算一次（還原時也要再算回來） */
-/* line-height 要壓在 .lc 上：時段與老師併成一行之後，那一行是「匿名區塊」，
-   行高吃的是 .lc 繼承來的 strut（body 的 1.5 → 24px），不是 .t／.m 自己的 16.74px。
-   不壓的話併行只省了半行，白做。.nr／.bt 是 flex 容器、不吃 strut，不受影響 */
-.sheet.npack .lc{padding:5px 8px;margin-bottom:4px;border-radius:6px;line-height:16.8px}
+.sheet.npack .lc{padding:5px 8px;margin-bottom:4px;border-radius:6px}
 .sheet.npack .lc .nr{gap:6px}
 .sheet.npack .lc .n{line-height:1.18}
 .sheet.npack .lc .t,.sheet.npack .lc .m{line-height:1.24}
-/* 時段與老師併成一行：兩個都是短字串（「12:15-13:15」＋「Roushan 印 EN」），
-   各占一行等於白送一行高度。放不下時老師會自己折到第二行，就是原本的樣子 */
-.sheet.npack .lc .t,.sheet.npack .lc .m{display:inline}
-.sheet.npack .lc .m{margin-left:9px}
+/* 時段與老師維持各自一行（跟畫面上一樣）。併成一行雖然省一行高度，
+   但只有在欄位很寬（320px）時才放得下，而匯出已經改成比照畫面的窄欄了 */
 .sheet.npack .lc .bt{margin-top:3px;gap:4px}
 .sheet.npack .lc .bt:empty{display:none}
 .sheet.npack .hrow{padding-top:4px}
