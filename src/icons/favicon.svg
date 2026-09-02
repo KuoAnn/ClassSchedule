@@ -1,0 +1,31 @@
+<!-- 站台圖示（K 標誌）：build.py 轉成 data URI 內嵌成 <link rel="icon"> -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="K">
+<rect width="64" height="64" fill="#6EAAB0"/>
+<g transform="rotate(45 32 32) translate(3.84 3.84) scale(.88)" fill="none" stroke="#fff" stroke-width="1.45" stroke-linejoin="miter">
+<rect x="10.8" y="10.8" width="42.4" height="42.4"/>
+<rect x="13" y="13" width="38" height="38"/>
+<rect x="10.8" y="10.8" width="21.2" height="21.2"/>
+<rect x="13" y="13" width="16.8" height="16.8"/>
+<rect x="32" y="10.8" width="21.2" height="21.2"/>
+<rect x="34.2" y="13" width="16.8" height="16.8"/>
+<rect x="10.8" y="32" width="21.2" height="21.2"/>
+<rect x="13" y="34.2" width="16.8" height="16.8"/>
+<rect x="32" y="32" width="21.2" height="21.2"/>
+<rect x="34.2" y="34.2" width="16.8" height="16.8"/>
+<rect x="8.1" y="8.1" width="5.4" height="5.4"/>
+<rect x="50.5" y="8.1" width="5.4" height="5.4"/>
+<rect x="8.1" y="50.5" width="5.4" height="5.4"/>
+<rect x="50.5" y="50.5" width="5.4" height="5.4"/>
+<rect x="21" y="21" width="22" height="22" fill="#6EAAB0"/>
+<rect x="23.2" y="23.2" width="17.6" height="17.6"/>
+</g>
+<g fill="#fff" transform="translate(32 32) scale(.72) translate(-31.7 -32)">
+<rect x="25.2" y="23.8" width="3.4" height="16.4"/>
+<rect x="23" y="23.8" width="7.8" height="1.5"/>
+<rect x="23" y="38.7" width="7.8" height="1.5"/>
+<polygon points="34.4,23.8 37.8,23.8 28.6,34.6 28.6,31.4"/>
+<rect x="34.2" y="23.8" width="5.2" height="1.5"/>
+<polygon points="28.6,30.4 32.2,30.4 40.4,40.2 36.2,40.2"/>
+<rect x="35.4" y="38.7" width="5.8" height="1.5"/>
+</g>
+</svg>

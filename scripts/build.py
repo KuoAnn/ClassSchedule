@@ -2,6 +2,7 @@
 import csv, html, re, colorsys, sys
 
 import argparse, os, glob
+from urllib.parse import quote
 
 _p = argparse.ArgumentParser(description="瑜伽課表產生器：讀 CSV，輸出單一 HTML")
 _p.add_argument("--csv", help="課程 CSV 路徑（預設抓 data/ 下最新的一份）")
@@ -42,6 +43,12 @@ def bundle(sub, skip=()):
 def icon(name):
     """src/icons/<name>.svg → 內嵌 SVG"""
     return asset("icons", name + ".svg").strip()
+
+
+def data_icon(name):
+    """src/icons/<name>.svg → data URI；favicon 沒有外部檔可指，只能內嵌進單一 HTML"""
+    raw = re.sub(r"<!--.*?-->", "", asset("icons", name + ".svg"), flags=re.S)
+    return "data:image/svg+xml," + quote(re.sub(r"\s+", " ", raw).strip(), safe="/:;=,()'")
 
 
 SHEET_W = 2040
@@ -610,6 +617,7 @@ SCRIPTS = "\n".join([
     bundle("js", skip=("01-boot.js",)),
 ])
 FILL = {
+    "favicon": data_icon("favicon"),
     "title": "%d月課表 %s" % (MONTH, BRANCH),
     "og_desc": html.escape("%s %d月課表，共 %d 堂課；可切換寬版格線與單日清單。"
                            % (BRANCH, MONTH, sum(len(d) for d in S))),

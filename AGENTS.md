@@ -12,7 +12,7 @@ src/                  版面範本資源，可個別重用（打包時內嵌成�
   index.html          外框；{{title}} {{og_desc}} {{styles}} {{boot}} {{content}} {{scripts}}
   styles/01..13*.css  樣式，數字前綴＝串接順序
   js/01..09*.js       腳本，數字前綴＝串接順序
-  icons/*.svg         內嵌圖示
+  icons/*.svg         內嵌圖示（`favicon.svg` 走 data URI，見下）
 scripts/build.py      產生器：CSV → 卡片 HTML，再把 src/ 內嵌成單一檔
 scripts/run.sh        產檔 + 四項檢查
 scripts/checks/       occl.py／wcag.py／catcheck.py（＋ clock.py、de.py 為輔助）
@@ -49,6 +49,13 @@ dist/                 產物
    PNG 檔名走 `window.SCHEDULE`（由 build 產生，`08-export.js` 沒有時退回 `schedule.png`）。
 4. **`src/index.html` 的 `{{…}}` 佔位符要與 `build.py` 的 `FILL` 一致**，
    多打少打都會在 build 時直接丟 `KeyError`（這是刻意的，不要改成靜默略過）。
+
+## 站台圖示（favicon）
+
+`src/icons/favicon.svg`（K 標誌）由 `build.py` 的 `data_icon()` 轉成 data URI，
+填進 `src/index.html` 的 `{{favicon}}`。**不放外部 `.ico`／`.png`**，
+因為產物必須維持單一 HTML（Pages 只發佈 `dist/` 的那一份，外部檔會 404）。
+圖示是純幾何 SVG、沒有 `<text>`，才不會在缺字型的環境裡變成空白。
 
 ## LINE LIFF：五條約束
 
