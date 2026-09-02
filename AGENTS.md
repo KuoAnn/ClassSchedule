@@ -63,12 +63,21 @@ dist/                 產物
 **本站是純靜態課表、不讀任何會員資料**，因此不呼叫 `liff.login()` / `liff.getProfile()`，
 也不設 `withLoginOnExternalBrowser` — 一般瀏覽器開同一個網址不會被導去登入。
 
-1. **viewport 是動態的，不要再寫死。**
+1. **viewport 是動態的，而且寬版要自己算縮放比例。**
    `src/index.html` 預設 `width=device-width,initial-scale=1,viewport-fit=cover`；
    寬版是固定寬的海報版面，切過去時由 `setViewport()`（定義在 `01-boot.js`，
-   `05-view.js` 也會呼叫）改成 `width=<--sheetw>`，且**不給 initial-scale**，
-   讓瀏覽器整頁縮放。版面寬是從 CSS 變數 `--sheetw` 讀的，不是 build 寫死的字串，
-   所以「build 期的值不寫死在資源檔裡」這條仍然成立。
+   `05-view.js` 也會呼叫）改成 `width=<--sheetw>`。版面寬是從 CSS 變數 `--sheetw` 讀的，
+   不是 build 寫死的字串，所以「build 期的值不寫死在資源檔裡」這條仍然成立。
+   兩個坑（**都踩過**，不要「簡化」回去）：
+   - **縮放比例要明寫成 `initial-scale`，不能只靠瀏覽器 auto-shrink。**
+     LINE 的 WebView 對「載入後才改的 viewport」常常只吃寬度、不重算縮放，
+     結果寬版超出螢幕、字擠成一團還要橫向拖。比例 = 裝置寬 ÷ `--sheetw`。
+   - **裝置寬要在繪製前先量下來（`DEVW`）。** 換成 `width=2040` 之後
+     `clientWidth` 量到的是版面寬、不是螢幕寬，那時候就來不及了。
+     轉向會讓裝置寬變掉，`remeasureViewport()` 因此先退回 `device-width` 量一次
+     再把寬版套回去。量不到（`DEVW` 為 0）才退回舊行為：不給 `initial-scale`。
+   - **改 viewport 是整顆 `<meta>` 換掉，不是改 `content` 屬性。**
+     WebView 對屬性變更有時直接不重新套用版面。
 2. **`html` 的 class 只能用 `classList` 動，不可以直接指派 `className`。**
    `01-boot.js` 在繪製前掛上的 `.liff`（UA 含 `" Line/"`）會被整串覆蓋掉，
    `inLINE()` 就會回 false，長按存圖與 canvas 降階都失效。這個坑踩過一次。
