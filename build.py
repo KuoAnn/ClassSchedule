@@ -422,10 +422,14 @@ html.nv .keys::-webkit-scrollbar{display:none}
 .nlist{margin:2px -14px 0 0;display:flex;align-items:flex-start}
 .ndock{display:none;position:sticky;top:var(--dockH,92px);z-index:24;
 background:var(--page);padding:6px 0 8px;border-bottom:2px solid var(--lane);
-align-items:baseline;gap:11px;font-size:27px;font-weight:700;letter-spacing:.14em}
+align-items:baseline;justify-content:center;gap:11px;font-size:27px;font-weight:700;
+letter-spacing:.14em;padding-left:48px;margin-right:-14px}
 .ndock.show{display:flex}
 .ndock span{font-size:13px;font-weight:400;letter-spacing:.04em;color:var(--ink3)}
 .ndock .tdy{display:none}
+.ndock .dday{position:relative;white-space:nowrap}
+.ndock .tdy{position:absolute;left:100%;top:50%;transform:translateY(-50%);
+margin-left:11px;font-style:normal}
 .ndock.istoday .tdy{display:inline-block}
 .ngut{flex:0 0 48px;position:relative;z-index:3;background:var(--page)}
 .ngc{border-top:1px solid var(--rule);padding-top:5px;font-size:12.5px;color:var(--ink3);
@@ -998,7 +1002,10 @@ function setDockDay(k){
   if (!panel) return;
   var hd = panel.querySelector('.dhd');
   if (hd && ndock.dataset.k !== String(k)) {
-    ndock.innerHTML = hd.innerHTML;
+    var cl = hd.cloneNode(true), tdy = cl.querySelector('.tdy');
+    if (tdy) tdy.remove();
+    ndock.innerHTML = '<span class="dday">' + cl.innerHTML +
+      (tdy ? '<i class="tdy">' + tdy.innerHTML + '</i>' : '') + '</span>';
     ndock.dataset.k = String(k);
   }
   ndock.classList.toggle('istoday', panel.classList.contains('today'));

@@ -210,6 +210,13 @@ FAKE_CLOCK=1 python3 checks/wcag.py   # 固定時間驗證「今天／已開始�
     而且慣性可以持續很久，那段空窗非常明顯
   - 「今天」標籤只在該片面板真的是今天時顯示（`istoday`），
     複製過去的標籤預設隱藏
+  - dock 的星期**置中**，且要對齊當前面板的中心（因此 dock 要補
+    `padding-left` 等於時間欄寬度、`margin-right` 抵銷 `.nlist` 的負邊距）
+  - ⚠️ 「今天」標籤不能留在 flex 排版流裡，否則星期會被推離中心 30px。
+    也**不能只加 `position:absolute`** —— flex 容器的絕對定位子元素會依
+    `justify-content` 定位，結果直接疊在星期上面。
+    正解是把星期包一層 `.dday{position:relative}`，
+    標籤放進去用 `left:100%` 掛在右側
 
 ### 跨日時間對齊
 
