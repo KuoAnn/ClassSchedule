@@ -1,0 +1,33 @@
+/* 04-narrow.css — 窄版輪播骨架：時間欄、軌道、釘在上方的星期 */
+.nlist{margin:2px -14px 0 0;display:flex;align-items:flex-start}
+/* 釘在上方的星期：與面板內的標頭完全同樣式，看起來就是同一個標頭停住 */
+.ndock{display:none;position:sticky;top:var(--dockH,92px);z-index:24;
+padding-left:48px;margin-right:-14px;border-bottom:0}
+.ndock .dday::after{content:"";position:absolute;left:50%;transform:translateX(-50%);
+bottom:-8px;width:var(--dayw);border-bottom:2px solid var(--lane)}
+.ndock.istoday .dday::after{border-bottom-color:#a89670}
+.ndock.show{display:flex}
+.ntrack.pinned .dhd{visibility:hidden}
+.ngut{flex:0 0 48px;position:relative;z-index:3;background:var(--page)}
+.ngc{border-top:1px solid var(--rule);padding-top:5px;font-size:12.5px;color:var(--ink3);
+font-variant-numeric:tabular-nums;box-sizing:border-box;overflow:hidden}
+.ngc.head{border-top:0}
+.ngc b{font-weight:400;display:block}
+.ngc .gb{display:flex;align-items:center;gap:3px;color:#786a56;font-size:11.5px;
+letter-spacing:.08em;margin-bottom:1px}
+.ngc .gb .ic{width:11px;height:11px;flex:0 0 11px;display:block}
+.ncar{position:relative;flex:1;min-width:0}
+.ncar::before,.ncar::after{content:"";position:absolute;top:0;bottom:0;
+pointer-events:none;z-index:2}
+.ncar::before{left:0;width:var(--fadeL,0px);background:linear-gradient(to right,var(--page) 14%,rgba(244,240,233,0))}
+.ncar::after{right:0;width:var(--fadeR,0px);background:linear-gradient(to left,var(--page) 14%,rgba(244,240,233,0))}
+.hrow{border-top:1px solid var(--rule);padding-top:5px;box-sizing:border-box;overflow:hidden}
+.ntrack{display:flex;align-items:flex-start;gap:var(--gap);
+overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
+-webkit-overflow-scrolling:touch;cursor:grab}
+.ntrack::-webkit-scrollbar{display:none}
+.ntrack.drag{cursor:grabbing;scroll-snap-type:none}
+.ntrack.full{padding-left:0;overflow-x:hidden;scroll-snap-type:none;cursor:default;
+justify-content:center}
+.ntrack.full .dgrp.clone{display:none}
+.nlist.full .ncar::before,.nlist.full .ncar::after{display:none}

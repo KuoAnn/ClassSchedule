@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>{{title}}</title>
+<meta name="viewport" content="width={{sheet_width}}">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+{{styles}}
+</style>
+</head>
+<body>
+<script>
+{{boot}}
+</script>
+<div class="wrap"><main class="sheet" id="sheet">
+{{content}}
+<div class="sr-only" role="status" aria-live="polite" id="live"></div>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+{{scripts}}
+</script>
+</body>
+</html>

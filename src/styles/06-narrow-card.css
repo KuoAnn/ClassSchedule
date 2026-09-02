@@ -1,0 +1,36 @@
+/* 06-narrow-card.css — 窄版左右翻頁鈕、日面板標頭與單日卡片 .lc */
+.nav{position:fixed;top:50%;transform:translate(-50%,-50%);z-index:28;
+width:38px;height:38px;border-radius:50%;border:1px solid var(--rule2);
+background:rgba(255,255,255,.92);color:var(--ink2);cursor:pointer;
+display:flex;align-items:center;justify-content:center;padding:0}
+.nav svg{width:19px;height:19px;display:block}
+.nav:hover{background:#fff;color:var(--ink)}
+html.wv .nav{display:none}
+.dgrp{flex:0 0 var(--dayw);scroll-snap-align:center;margin-bottom:2px}
+.dhd,.ndock{display:flex;align-items:baseline;justify-content:center;
+font-size:27px;font-weight:700;letter-spacing:.14em;
+padding-top:2px;padding-bottom:8px;border-bottom:2px solid var(--lane);
+background:var(--page)}
+.ndock:not(.show){display:none}
+.dday{position:relative;white-space:nowrap}
+.dhd .tdy,.ndock .tdy{display:none;position:absolute;left:100%;top:50%;
+transform:translateY(-50%);margin-left:11px;font-style:normal}
+.dgrp.today .tdy,.ndock.istoday .tdy{display:inline-block}
+.lc{border:1px solid;border-left-width:3px;border-radius:8px;padding:9px 11px;margin-bottom:5px}
+.lc .nr{display:flex;align-items:flex-start;gap:8px}
+.lc .n{flex:1;min-width:0;font-size:16px;font-weight:500;line-height:1.25}
+.lc .lv{flex:0 0 auto;font-style:normal;font-weight:500;font-size:11px;line-height:1.3;
+border-radius:4px;padding:1px 6px;letter-spacing:.04em;white-space:nowrap}
+.lc .t{font-size:13.5px;color:var(--ink2);line-height:1.4;font-variant-numeric:tabular-nums;margin-top:1px}
+.lc .t .du{font-style:normal;margin-left:2px;font-size:.86em;color:var(--ink3)}
+.lc .m{font-size:13.5px;color:var(--ink3);line-height:1.4}
+.lc .m .tg{font-style:normal;font-size:10.5px;background:#efeae2;color:#635d55;
+border-radius:3px;padding:0 4px;margin-left:2px;vertical-align:1px}
+.lc .bt{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:6px}
+.lc .x{display:flex;flex-wrap:wrap;gap:4px}
+.lc .x>span{display:inline-block;font-weight:500;font-size:11.5px;line-height:1.4;
+border-radius:4px;padding:1px 6px;letter-spacing:.02em}
+.lc .x>.sub{color:#33506b;background:#dde6ee}
+.lc .x>.stop{color:#8f3b24;background:#f4ddd9}
+.lc .cg{margin-left:auto;font-weight:500;font-size:11px;line-height:1.4;
+border-radius:4px;padding:1px 6px;letter-spacing:.04em;white-space:nowrap}

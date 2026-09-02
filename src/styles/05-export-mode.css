@@ -1,0 +1,17 @@
+/* 05-export-mode.css — 匯出圖片時的覆寫（flat／weekexp／noto）；位置需維持在窄版與面板之間，見 AGENTS.md */
+.sheet.flat .top,.sheet.flat .headrow{position:static}
+.sheet.flat .topspacer{display:none}
+.sheet.flat .hcorner{position:static}
+.sheet.flat .gut{position:relative}
+.sheet.flat .ndock{display:none}
+.sheet.weekexp{width:max-content}
+.sheet.weekexp .nlist,.sheet.weekexp .ncar{width:max-content}
+.sheet.weekexp .ntrack{overflow:visible;padding:0!important;justify-content:flex-start;width:max-content}
+.sheet.weekexp .dgrp.clone{display:none}
+.sheet.weekexp .ncar::before,.sheet.weekexp .ncar::after{display:none}
+.sheet.weekexp .keys{overflow:visible;flex-wrap:wrap;margin-right:0}
+.sheet.noto .dn.today:not(.we){background:transparent}
+.sheet.noto .dn.today.we{background:#ece5d9}
+.sheet.noto .col.today{background:transparent}
+.sheet.noto .tdy{display:none}
+.sheet.noto .dgrp.today .dhd{border-bottom-color:var(--lane)}

@@ -13,6 +13,7 @@ _p.add_argument("--byline-en", default="Made by Lulu", help="署名（英文）"
 _a = _p.parse_args()
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_SRC = os.path.join(_ROOT, "src")
 SRC = _a.csv or sorted(glob.glob(os.path.join(_ROOT, "data", "*.csv")))[-1]
 _stem = os.path.splitext(os.path.basename(SRC))[0]
 _m = re.search(r"(\d{1,2})\s*月", _stem)
@@ -21,6 +22,24 @@ _b = re.match(r"([^\d]+館)", _stem)
 BRANCH = _a.branch or (_b.group(1) if _b else "本館")
 OUT = _a.out or os.path.join(_ROOT, "dist", "%s-%02d月課表.html" % (BRANCH, MONTH))
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
+
+
+def asset(*parts):
+    """讀一份 src/ 下的範本資源檔"""
+    with open(os.path.join(_SRC, *parts), encoding="utf-8") as f:
+        return f.read()
+
+
+def bundle(sub, skip=()):
+    """把 src/<sub>/ 依檔名順序（01-、02-…）串成一份，打包時內嵌進單一 HTML"""
+    names = [n for n in sorted(os.listdir(os.path.join(_SRC, sub))) if n not in skip]
+    return "\n".join(asset(sub, n).rstrip("\n") for n in names)
+
+
+def icon(name):
+    """src/icons/<name>.svg → 內嵌 SVG"""
+    return asset("icons", name + ".svg").strip()
+
 
 SHEET_W = 2040
 GUT = 56
@@ -105,26 +124,11 @@ EN_TEACHER = {"丁丁": "Ding-Ding", "柳川": "Liu-Chuan", "錦潭": "Jin-Tan",
 EN_MONTH = ["January", "February", "March", "April", "May", "June", "July",
             "August", "September", "October", "November", "December"]
 EN_BRANCH = "Guting Studio"
-VIEW_ICON = {
-    "w": ('<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
-          'stroke-linejoin="round"><rect x="3.2" y="4.2" width="7.2" height="7.2" rx="1.3"/>'
-          '<rect x="13.6" y="4.2" width="7.2" height="7.2" rx="1.3"/>'
-          '<rect x="3.2" y="12.6" width="7.2" height="7.2" rx="1.3"/>'
-          '<rect x="13.6" y="12.6" width="7.2" height="7.2" rx="1.3"/></svg>'),
-    "n": ('<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
-          'stroke-linecap="round"><circle cx="4.6" cy="6.4" r="1.15" fill="currentColor" stroke="none"/>'
-          '<circle cx="4.6" cy="12" r="1.15" fill="currentColor" stroke="none"/>'
-          '<circle cx="4.6" cy="17.6" r="1.15" fill="currentColor" stroke="none"/>'
-          '<path d="M9 6.4h11M9 12h11M9 17.6h11"/></svg>'),
-}
+VIEW_ICON = {"w": icon("view-grid"), "n": icon("view-list")}
 
 BYLINE = (_a.byline, _a.byline_en)
 EN_DAY = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-ICON = {
-    "早": '<svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18.5h16M7.6 18.5a4.4 4.4 0 0 1 8.8 0M12 4v3.2M5.8 7.4l2.1 2.1M18.2 7.4l-2.1 2.1"/></svg>',
-    "午": '<svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 2.8v2.3M12 18.9v2.3M2.8 12h2.3M18.9 12h2.3M5.5 5.5l1.6 1.6M16.9 16.9l1.6 1.6M18.5 5.5l-1.6 1.6M7.1 16.9l-1.6 1.6"/></svg>',
-    "晚": '<svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 14.9A8.6 8.6 0 0 1 9.1 3.8a8.6 8.6 0 1 0 11.1 11.1z"/></svg>',
-}
+ICON = {"早": icon("band-am"), "午": icon("band-mid"), "晚": icon("band-pm")}
 
 EN_BAND = {"早": "AM", "午": "MID", "晚": "PM"}
 EN_LV = {"中": "Int", "高": "Adv"}
@@ -382,336 +386,6 @@ def emit_keys():
 
 o = []
 a = o.append
-a('<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">')
-a('<title>%d月課表 %s</title>' % (MONTH, BRANCH))
-a('<meta name="viewport" content="width=%d">' % SHEET_W)
-a('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>')
-a('<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">')
-a("""<style>
-:root{--page:#F4F0E9;--ink:#33302b;--ink2:#635d55;--ink3:#6e675d;
---rule:#e3dcd1;--rule2:#cdc3b4;--lane:#c3b6a1;--band1:#fdfcfa;--band2:#f8f3eb;--band3:#f0e9de;
---gy:__GH__px;--gut:__GUT__px;--dayw:320px;--gap:12px;--peek:26px}
-*{box-sizing:border-box;margin:0;padding:0}
-.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;
-overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-:where(button,a,[tabindex]):focus-visible{outline:3px solid #2f5d86;outline-offset:2px;
-border-radius:6px}
-@media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{animation-duration:.001ms!important;
-    animation-iteration-count:1!important;transition-duration:.001ms!important;
-    scroll-behavior:auto!important}
-}
-body{background:var(--page);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
-.wrap{width:__SW__px;margin:0 auto}
-html.nv .wrap{width:auto;max-width:none}
-html.nv .sheet{padding:16px 14px 20px}
-html.nv .wideonly{display:none}
-html.wv .narrowonly{display:none}
-html.nv .hd h1{font-size:26px}
-html.nv .hd h1 em{font-size:14px;margin-left:11px}
-html.nv .tools{gap:7px}
-html.nv .seg{padding:2px}
-html.nv .seg button{padding:6px 11px;font-size:13px}
-html.nv #view button{padding:6px 9px}
-html.nv #view svg{width:16px;height:16px}
-html.nv #dl{width:34px;height:34px}
-html.nv #dl svg{width:16px;height:16px}
-html.nv .keys{gap:0 16px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
-margin:9px -14px 0 0;padding:1px 14px 3px 0}
-html.nv .keys::-webkit-scrollbar{display:none}
-
-.nlist{margin:2px -14px 0 0;display:flex;align-items:flex-start}
-/* 釘在上方的星期：與面板內的標頭完全同樣式，看起來就是同一個標頭停住 */
-.ndock{display:none;position:sticky;top:var(--dockH,92px);z-index:24;
-padding-left:48px;margin-right:-14px;border-bottom:0}
-.ndock .dday::after{content:"";position:absolute;left:50%;transform:translateX(-50%);
-bottom:-8px;width:var(--dayw);border-bottom:2px solid var(--lane)}
-.ndock.istoday .dday::after{border-bottom-color:#a89670}
-.ndock.show{display:flex}
-.ntrack.pinned .dhd{visibility:hidden}
-.ngut{flex:0 0 48px;position:relative;z-index:3;background:var(--page)}
-.ngc{border-top:1px solid var(--rule);padding-top:5px;font-size:12.5px;color:var(--ink3);
-font-variant-numeric:tabular-nums;box-sizing:border-box;overflow:hidden}
-.ngc.head{border-top:0}
-.ngc b{font-weight:400;display:block}
-.ngc .gb{display:flex;align-items:center;gap:3px;color:#786a56;font-size:11.5px;
-letter-spacing:.08em;margin-bottom:1px}
-.ngc .gb .ic{width:11px;height:11px;flex:0 0 11px;display:block}
-.ncar{position:relative;flex:1;min-width:0}
-.ncar::before,.ncar::after{content:"";position:absolute;top:0;bottom:0;
-pointer-events:none;z-index:2}
-.ncar::before{left:0;width:var(--fadeL,0px);background:linear-gradient(to right,var(--page) 14%,rgba(244,240,233,0))}
-.ncar::after{right:0;width:var(--fadeR,0px);background:linear-gradient(to left,var(--page) 14%,rgba(244,240,233,0))}
-.hrow{border-top:1px solid var(--rule);padding-top:5px;box-sizing:border-box;overflow:hidden}
-.ntrack{display:flex;align-items:flex-start;gap:var(--gap);
-overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
--webkit-overflow-scrolling:touch;cursor:grab}
-.ntrack::-webkit-scrollbar{display:none}
-.ntrack.drag{cursor:grabbing;scroll-snap-type:none}
-.ntrack.full{padding-left:0;overflow-x:hidden;scroll-snap-type:none;cursor:default;
-justify-content:center}
-.ntrack.full .dgrp.clone{display:none}
-.nlist.full .ncar::before,.nlist.full .ncar::after{display:none}
-.sheet.flat .top,.sheet.flat .headrow{position:static}
-.sheet.flat .topspacer{display:none}
-.sheet.flat .hcorner{position:static}
-.sheet.flat .gut{position:relative}
-.sheet.flat .ndock{display:none}
-.sheet.weekexp{width:max-content}
-.sheet.weekexp .nlist,.sheet.weekexp .ncar{width:max-content}
-.sheet.weekexp .ntrack{overflow:visible;padding:0!important;justify-content:flex-start;width:max-content}
-.sheet.weekexp .dgrp.clone{display:none}
-.sheet.weekexp .ncar::before,.sheet.weekexp .ncar::after{display:none}
-.sheet.weekexp .keys{overflow:visible;flex-wrap:wrap;margin-right:0}
-.sheet.noto .dn.today:not(.we){background:transparent}
-.sheet.noto .dn.today.we{background:#ece5d9}
-.sheet.noto .col.today{background:transparent}
-.sheet.noto .tdy{display:none}
-.sheet.noto .dgrp.today .dhd{border-bottom-color:var(--lane)}
-.nav{position:fixed;top:50%;transform:translate(-50%,-50%);z-index:28;
-width:38px;height:38px;border-radius:50%;border:1px solid var(--rule2);
-background:rgba(255,255,255,.92);color:var(--ink2);cursor:pointer;
-display:flex;align-items:center;justify-content:center;padding:0}
-.nav svg{width:19px;height:19px;display:block}
-.nav:hover{background:#fff;color:var(--ink)}
-html.wv .nav{display:none}
-.dgrp{flex:0 0 var(--dayw);scroll-snap-align:center;margin-bottom:2px}
-.dhd,.ndock{display:flex;align-items:baseline;justify-content:center;
-font-size:27px;font-weight:700;letter-spacing:.14em;
-padding-top:2px;padding-bottom:8px;border-bottom:2px solid var(--lane);
-background:var(--page)}
-.ndock:not(.show){display:none}
-.dday{position:relative;white-space:nowrap}
-.dhd .tdy,.ndock .tdy{display:none;position:absolute;left:100%;top:50%;
-transform:translateY(-50%);margin-left:11px;font-style:normal}
-.dgrp.today .tdy,.ndock.istoday .tdy{display:inline-block}
-.lc{border:1px solid;border-left-width:3px;border-radius:8px;padding:9px 11px;margin-bottom:5px}
-.lc .nr{display:flex;align-items:flex-start;gap:8px}
-.lc .n{flex:1;min-width:0;font-size:16px;font-weight:500;line-height:1.25}
-.lc .lv{flex:0 0 auto;font-style:normal;font-weight:500;font-size:11px;line-height:1.3;
-border-radius:4px;padding:1px 6px;letter-spacing:.04em;white-space:nowrap}
-.lc .t{font-size:13.5px;color:var(--ink2);line-height:1.4;font-variant-numeric:tabular-nums;margin-top:1px}
-.lc .t .du{font-style:normal;margin-left:2px;font-size:.86em;color:var(--ink3)}
-.lc .m{font-size:13.5px;color:var(--ink3);line-height:1.4}
-.lc .m .tg{font-style:normal;font-size:10.5px;background:#efeae2;color:#635d55;
-border-radius:3px;padding:0 4px;margin-left:2px;vertical-align:1px}
-.lc .bt{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:6px}
-.lc .x{display:flex;flex-wrap:wrap;gap:4px}
-.lc .x>span{display:inline-block;font-weight:500;font-size:11.5px;line-height:1.4;
-border-radius:4px;padding:1px 6px;letter-spacing:.02em}
-.lc .x>.sub{color:#33506b;background:#dde6ee}
-.lc .x>.stop{color:#8f3b24;background:#f4ddd9}
-.lc .cg{margin-left:auto;font-weight:500;font-size:11px;line-height:1.4;
-border-radius:4px;padding:1px 6px;letter-spacing:.04em;white-space:nowrap}
-.sheet{background:var(--page);padding:0 20px 16px;position:relative}
-.sheet .en{display:none}
-.sheet.en .zh{display:none}
-.sheet.en .en{display:inline}
-.hd{padding-bottom:12px}
-.hd h1{font-size:34px;font-weight:500;letter-spacing:.06em;line-height:1.1}
-.hd .by{font-size:13px;color:var(--ink3);letter-spacing:.14em;margin-top:7px}
-.hd h1 em{font-style:normal;font-size:17px;font-weight:400;color:var(--ink3);letter-spacing:.12em;margin-left:18px}
-
-.top{position:fixed;top:0;left:0;right:0;z-index:30;background:var(--page);
-padding:13px 20px 10px;border-bottom:1px solid rgba(0,0,0,.05)}
-.topspacer{height:var(--dockH,92px)}
-.trow{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.tools{display:flex;gap:10px;align-items:center;flex:0 0 auto}
-/* 空間不足時縮字級與按鈕，讓標題與功能列維持同一列 */
-@media (max-width:900px){
-  .top{padding:10px 14px 8px}
-  .hd h1{font-size:22px}
-  .hd h1 em{font-size:12px;margin-left:9px}
-  .hd .by{font-size:11px;margin-top:4px;letter-spacing:.1em}
-  .tools{gap:6px}
-  .seg{padding:2px}
-  .seg button{padding:5px 10px;font-size:12.5px}
-  #view button{padding:5px 8px}
-  #view svg{width:15px;height:15px}
-  #dl{width:30px;height:30px}
-  #dl svg{width:15px;height:15px}
-  .top .keys{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
-    padding-bottom:2px;margin-top:8px;gap:0 16px}
-  .top .keys::-webkit-scrollbar{display:none}
-}
-@media (max-width:560px){
-  .hd h1{font-size:19px}
-  .hd .by{display:none}
-  .seg button{padding:5px 8px;font-size:12px}
-  #view button{padding:5px 7px}
-  .top .key{font-size:13px}
-}
-
-.tools{--btnH:34px}
-.tools button{font:400 14px/1 inherit;color:var(--ink2);background:#fff;
-border:1px solid var(--rule2);cursor:pointer;letter-spacing:.06em;border-radius:999px}
-#dl{padding:0;width:var(--btnH);height:var(--btnH);border-radius:50%;
-display:flex;align-items:center;justify-content:center;flex:0 0 auto}
-#dl svg{width:17px;height:17px;display:block}
-#dl .i-sp{display:none}
-#dl.busy .i-dl{display:none}
-#dl.busy .i-sp{display:block;animation:sp .8s linear infinite}
-@keyframes sp{to{transform:rotate(360deg)}}
-.tools button:hover{background:#faf7f1;color:var(--ink)}
-.tools button:disabled{opacity:.5;cursor:default}
-.seg{display:flex;align-items:center;height:var(--btnH);background:#fff;
-border:1px solid var(--rule2);border-radius:999px;padding:3px;box-sizing:border-box}
-.seg button{border:0;background:transparent;padding:0 14px;border-radius:999px;
-height:100%;display:flex;align-items:center;font-size:13.5px;color:var(--ink2);letter-spacing:.04em}
-.seg button.on{background:#ece5d9;color:var(--ink);font-weight:500}
-#view button{padding:0 11px;justify-content:center}
-#view svg{width:17px;height:17px;display:block}
-
-.headrow{display:flex;position:sticky;top:var(--dockH,92px);z-index:25;background:var(--page)}
-.hcorner{flex:0 0 var(--gut);position:sticky;left:0;z-index:3;background:var(--page);
-border-bottom:1px solid var(--rule2)}
-.dn:nth-child(2){border-top-left-radius:10px}
-.dn:last-child{border-top-right-radius:10px}
-.dn{flex:1;text-align:center;font-size:18px;font-weight:500;letter-spacing:.16em;padding:12px 0;border-right:2px solid var(--lane);border-bottom:1px solid var(--rule2)}
-.dn:last-child{border-right:0}
-.dn.we{background:#ece5d9}
-.tdy{display:none;font-size:11px;font-weight:400;letter-spacing:.08em;color:#7f643a;
-background:#efeae2;border-radius:4px;padding:1px 6px;margin-left:9px;vertical-align:2px}
-.dn.today .tdy{display:inline-block}
-.dn.today{background:#e8e0cf}
-.col.today{background:rgba(196,156,64,.075)}
-.dgrp.today .dhd,.ndock.istoday{border-bottom-color:#a89670}
-
-.body{display:flex}
-.gut{width:var(--gut);position:sticky;left:0;height:var(--gy);z-index:20;
-background:var(--page);flex:0 0 var(--gut)}
-.gut .hr{position:absolute;right:12px;font-size:14px;color:var(--ink3);transform:translateY(-50%);font-variant-numeric:tabular-nums;white-space:nowrap}
-.gut .bl{position:absolute;right:12px;transform:translateY(-50%);display:flex;align-items:center;
-gap:3px;white-space:nowrap;color:#786a56}
-.gut .bl b{font-weight:500;font-size:14px;letter-spacing:.08em}
-.gut .bl .ic{width:12px;height:12px;flex:0 0 12px;display:block}
-.gut .hr.end{color:#786a56}
-
-.cal{flex:1;position:relative;height:var(--gy);border-radius:0 0 10px 10px;overflow:hidden}
-.lay{position:absolute;inset:0;overflow:hidden;border-radius:0 0 12px 12px}
-.bg{position:absolute;left:0;right:0}
-.hl{position:absolute;left:0;right:0;border-top:1px solid var(--rule)}
-.hl.s{border-top-color:var(--rule2)}
-.hl.h{border-top:1px dashed var(--rule);opacity:.7}
-.cut{position:absolute;left:0;right:0;background:repeating-linear-gradient(135deg,#e7e0d4 0 2px,#f1ebe1 2px 7px);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);opacity:.85}
-.we-wash{position:absolute;top:0;bottom:0;background:#dfd2bc;opacity:.2}
-.cols{position:absolute;inset:0;display:flex}
-.col{flex:1;position:relative;border-right:2px solid var(--lane)}
-.col:last-child{border-right:0}
-
-.ev{position:absolute;padding:6px 10px;border:1px solid;border-left-width:3px;overflow:hidden;
-border-radius:7px;display:flex;flex-direction:column;gap:4px}
-.ev>*{flex:0 0 auto;min-width:0}
-.ev .tp{min-width:0}
-.ev .nr{display:flex;align-items:flex-start;gap:6px;min-width:0}
-.ev .n{flex:1;min-width:0;font-size:16px;font-weight:500;line-height:1.2;letter-spacing:.01em;overflow-wrap:break-word;
-display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.ev .t{font-size:13.5px;color:var(--ink2);line-height:1.26;font-variant-numeric:tabular-nums}
-.ev .t .hh{white-space:nowrap}
-.ev .t .du{font-style:normal;margin-left:1px;font-size:.86em;color:var(--ink3);white-space:nowrap}
-.ev .m{font-size:13.5px;color:var(--ink3);line-height:1.26;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ev .m .tg{font-style:normal;font-size:10.5px;background:#efeae2;border-radius:3px;
-padding:1px 4px;margin-left:4px;vertical-align:1px;letter-spacing:.02em;color:#635d55}
-.ev .lv{flex:0 0 auto;font-style:normal;font-size:10.5px;font-weight:500;color:#7f643a;
-background:#efeae2;border-radius:4px;padding:0 5px;letter-spacing:.04em;
-line-height:1.25;white-space:nowrap}
-.ev .bt{margin-top:auto;display:flex;flex-wrap:wrap;align-items:baseline;gap:1px 8px}
-.ev .x{display:flex;flex-wrap:wrap;gap:2px 4px;max-width:100%}
-.ev .x>span{display:inline-block;font-weight:500;font-size:11px;line-height:1.4;
-border-radius:4px;padding:1px 5px;letter-spacing:.02em;white-space:nowrap}
-.ev .x>.sub{color:#33506b;background:#dde6ee}
-.ev .x>.stop{color:#8f3b24;background:#f4ddd9}
-.ev .cg{margin-left:auto;font-size:10.5px;font-weight:500;line-height:1.4;letter-spacing:.04em;
-white-space:nowrap;border-radius:4px;padding:1px 5px}
-.ev.nar{padding:5px 6px;gap:3px}
-.ev.nar .nr{gap:3px}
-.ev.nar .n{font-size:14px;line-height:1.16;overflow-wrap:anywhere;-webkit-line-clamp:4}
-.ev.nar .lv{font-size:10px;padding:0 4px;line-height:1.2}
-.ev.nar .t{font-size:11.5px}
-.ev.nar .m{font-size:11.5px;white-space:normal;line-height:1.24;text-overflow:clip;overflow-wrap:break-word}
-.ev.nar .x>span{font-size:10px;padding:1px 4px;white-space:normal}
-.ev.nar .cg{font-size:10px;padding:1px 5px}
-.ev.nar .m .tg{font-size:10px;padding:0 4px;margin-left:1px}
-.ev.f1{gap:2px;padding-top:4px;padding-bottom:4px}
-.ev.f1 .n{font-size:11.6px;line-height:1.1}
-.ev.f1 .t,.ev.f1 .m{font-size:10px;line-height:1.14}
-.ev.f1 .lv,.ev.f2 .lv{font-size:9.5px;line-height:1.15}
-.ev.f1 .x>span{font-size:9.5px}
-.ev.f2{gap:1px;padding:3px 7px}
-.ev.f2 .n{font-size:10.8px;line-height:1.08}
-.ev.f2 .t,.ev.f2 .m{font-size:9.5px;line-height:1.1}
-.ev.f2 .x>span,.ev.f2 .cg{font-size:9px;padding:0 4px}
-.ev.f3{gap:0;padding:2px 6px}
-.ev.f3 .n{font-size:10px;line-height:1.05}
-.ev.f3 .t,.ev.f3 .m{font-size:9px;line-height:1.08}
-.ev.f3 .x>span,.ev.f3 .cg{font-size:8.5px;padding:0 3px}
-.ev.f3 .lv,.ev.f3 .m .tg{display:none}
-.ev.f4{gap:0;padding:2px 5px}
-.ev.f4 .n{font-size:9.5px;line-height:1.04}
-.ev.f4 .t,.ev.f4 .m{font-size:8.5px;line-height:1.06}
-.ev.f4 .x>span{font-size:8px;padding:0 3px}
-.ev.f4 .lv,.ev.f4 .cg,.ev.f4 .m .tg,.ev.f4 .du{display:none}
-.ev.f1{gap:1px;padding-top:4px;padding-bottom:4px}
-.ev.f1 .n{font-size:11.6px;line-height:1.1}
-.ev.f1 .t,.ev.f1 .m{font-size:10px;line-height:1.14}
-.ev.f1 .x>span{font-size:9.5px}
-.ev.f2{gap:0;padding:3px 7px}
-.ev.f2 .n{font-size:10.8px;line-height:1.08}
-.ev.f2 .t,.ev.f2 .m{font-size:9.5px;line-height:1.1}
-.ev.f2 .x{font-size:9px;line-height:1.1}
-.ev.f3{gap:0;padding:2px 6px}
-.ev.f3 .n{font-size:10px;line-height:1.05}
-.ev.f3 .t,.ev.f3 .m{font-size:9px;line-height:1.08}
-.ev.f3 .x{font-size:8.5px;line-height:1.08}
-.ev.f3 .lv,.ev.f3 .m .tg{display:none}
-.ev.f4{gap:0;padding:2px 5px}
-.ev.f4 .n{font-size:9.5px;line-height:1.04}
-.ev.f4 .t,.ev.f4 .m{font-size:8.5px;line-height:1.06}
-.ev.f4 .x>span{font-size:8px;padding:0 3px}
-.ev.f4 .lv,.ev.f4 .cg,.ev.f4 .m .tg,.ev.f4 .du{display:none}
-
-.keys{margin-top:11px}
-.keys{display:flex;flex-wrap:wrap;gap:9px 22px;align-items:center}
-.keys.on .key:not(.sel){opacity:.4}
-.key{border:0;background:transparent;font-family:inherit;cursor:pointer;
-padding:5px 7px;margin:-5px -3px;border-radius:7px;min-height:26px;
-display:flex;align-items:center;gap:7px;font-size:14px;color:var(--ink2);white-space:nowrap}
-.key:hover{background:rgba(0,0,0,.05)}
-.key.sel{background:rgba(0,0,0,.08)}
-.key i{width:14px;height:14px;flex:0 0 14px;display:block;border-radius:4px}
-.clear{display:none;border:1px solid var(--rule2);background:#fff;font-family:inherit;
-font-size:13px;color:var(--ink2);padding:5px 14px;border-radius:16px;cursor:pointer;
-letter-spacing:.06em;margin-left:4px}
-.clear:hover{background:#faf7f1}
-.keys.on .clear{display:inline-block}
-/* 結束：整張卡淡化（此處刻意不套 WCAG 對比要求，詳見 AGENTS.md 規格） */
-.ev.st-done,.lc.st-done{filter:opacity(.4)}
-/* 狀態標籤與難度標籤共用右上角，尺寸一致；有狀態時難度不顯示 */
-.stt{flex:0 0 auto;font-style:normal;font-weight:500;font-size:10.5px;line-height:1.25;
-border-radius:4px;padding:0 5px;letter-spacing:.04em;white-space:nowrap}
-.st-done .lv,.st-live .lv{display:none}
-.st-done .stt{color:#5c5852;background:#e4e0d8}
-.st-live .stt{color:#2f5e37;background:#d7e7d9}
-.st-live .stt::before{content:"";display:inline-block;width:5px;height:5px;
-border-radius:50%;background:#3f7a49;margin-right:5px;vertical-align:1px;
-animation:livepulse 1.5s ease-in-out infinite}
-@keyframes livepulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.28;transform:scale(.72)}}
-.ev.nar .stt,.ev.nar .lv{font-size:9px;padding:0 3px;letter-spacing:0;
-max-width:50%;overflow:hidden;text-overflow:ellipsis}
-.lc .stt{font-size:11px;padding:1px 6px;line-height:1.3}
-.sheet.nopast .st-done{filter:none}
-.sheet.on .ev,.sheet.on .lc{opacity:.14}
-.sheet.on .ev.match,.sheet.on .lc.match{opacity:1}
-.key u{text-decoration:none;color:var(--ink3);font-size:13px;margin-left:5px}
-.key u b{font-weight:500;color:var(--ink)}
-
-@media print{@page{size:A2 landscape;margin:8mm}body{background:#fff}.wrap{width:100%;margin:0}.sheet{padding:0;border-radius:0}.tools{display:none}}
-</style></head><body>
-<script>(function(){var v;try{v=localStorage.getItem('yoga-view')}catch(e){}
-if(v!=='n'&&v!=='w')v=(window.innerWidth||1200)<900?'n':'w';
-document.documentElement.className=(v==='n'?'nv':'wv')})();</script>
-<div class="wrap"><main class="sheet" id="sheet">"""
-  .replace("__GH__", "%.0f" % GH).replace("__GUT__", str(GUT)).replace("__SW__", str(SHEET_W)))
 
 a('<div class="top"><div class="trow">')
 a('<div class="hd"><h1>%s<em>%s</em></h1><div class="by">%s</div></div>' % (
@@ -725,12 +399,8 @@ a('<div class="tools" data-noexport="1">'
   '<button data-l="zh" class="on" aria-pressed="true" lang="zh-Hant" '
   'aria-label="中文">中</button>'
   '<button data-l="en" aria-pressed="false" lang="en" aria-label="English">EN</button></div>'
-  '<button id="dl" aria-label="Download image">'
-  '<svg class="i-dl" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
-  'stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11M7.4 10l4.6 4.6 4.6-4.6M4.5 20h15"/></svg>'
-  '<svg class="i-sp" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
-  'stroke-linecap="round"><path d="M12 3.2a8.8 8.8 0 1 0 8.8 8.8"/></svg>'
-  '</button>'
+  '<button id="dl" aria-label="Download image">' + icon("download") + icon("spinner")
+  + '</button>'
   '</div>')
 a('</div>')
 emit_keys()
@@ -913,400 +583,38 @@ for di, day in enumerate(S):
         a('</div>')
     a('</section>')
 a('</div>')
-a('<button class="nav p" id="navp" data-noexport="1" aria-label="Previous day">'
-  '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
-  'stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button>')
-a('<button class="nav n" id="navn" data-noexport="1" aria-label="Next day">'
-  '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
-  'stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg></button>')
+a('<button class="nav p" id="navp" data-noexport="1" aria-label="Previous day">%s</button>'
+  % icon("nav-prev"))
+a('<button class="nav n" id="navn" data-noexport="1" aria-label="Next day">%s</button>'
+  % icon("nav-next"))
 a('</div></div>')
 a('</div></div>')
 
-a('<div class="sr-only" role="status" aria-live="polite" id="live"></div>')
-a('</main></div>')
-a('<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>')
-a("""<script>
-function fitCells(){
-  var els = document.querySelectorAll('.ev'), steps = ['f1','f2','f3','f4'];
-  for (var i = 0; i < els.length; i++){
-    var el = els[i];
-    el.classList.remove('f1','f2','f3','f4');
-    for (var j = 0; j < steps.length; j++){
-      if (el.scrollHeight <= el.clientHeight) break;
-      if (j) el.classList.remove(steps[j-1]);
-      el.classList.add(steps[j]);
-    }
-  }
+# ---------- 打包：把 src/ 的資源檔內嵌成單一 HTML ----------
+STYLES = "\n".join([
+    bundle("styles"),
+    "",
+    "/* 由 build.py 依這份課表算出的尺寸，覆寫 01-tokens.css 的預設值 */",
+    ":root{--gy:%.0fpx;--gut:%dpx;--sheetw:%dpx}" % (GH, GUT, SHEET_W),
+])
+SCRIPTS = "\n".join([
+    "// 由 build.py 依這份課表產生（08-export.js 讀 window.SCHEDULE）",
+    'window.SCHEDULE = {png: {zh: "%s", en: "%s"}};' % (
+        "%s-%d月課表.png" % (BRANCH, MONTH),
+        "%s-%s-schedule.png" % (EN_BRANCH.replace(" ", "-"), EN_MONTH[MONTH - 1])),
+    bundle("js", skip=("01-boot.js",)),
+])
+FILL = {
+    "title": "%d月課表 %s" % (MONTH, BRANCH),
+    "sheet_width": str(SHEET_W),
+    "styles": STYLES,
+    "boot": asset("js", "01-boot.js").rstrip("\n"),
+    "content": "\n".join(o),
+    "scripts": SCRIPTS,
 }
-(document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(fitCells);
-(function(){
-  var td = (new Date().getDay() + 6) % 7;
-  document.querySelectorAll('[data-day="' + td + '"]').forEach(function(el){
-    el.classList.add('today');
-  });
-})();
-// 當天課程三種狀態：已結束（反灰淡化）／進行中（標籤＋外圈）／待開課（不標）
-var STATE = {
-  done: {zh: '結束', en: 'Ended'},
-  live: {zh: '進行中', en: 'Live'}
-};
-function markPast(){
-  var d = new Date(), td = (d.getDay() + 6) % 7, now = d.getHours() * 60 + d.getMinutes();
-  document.querySelectorAll('.ev,.lc').forEach(function(el){
-    var host = el.closest('[data-day]');
-    var today = !!host && +host.dataset.day === td;
-    var st = +el.dataset.start, en = +el.dataset.end;
-    var state = '';
-    if (today) {
-      if (now >= en) state = 'done';
-      else if (now >= st) state = 'live';
-    }
-    el.classList.toggle('st-done', state === 'done');
-    el.classList.toggle('st-live', state === 'live');
-    var slot = el.querySelector('.nr'), chip = el.querySelector('.stt');
-    if (state && slot) {
-      if (!chip) {
-        chip = document.createElement('i');
-        chip.className = 'stt';
-        slot.appendChild(chip);
-      }
-      if (chip.dataset.s !== state) {
-        chip.dataset.s = state;
-        chip.innerHTML = '<span class="zh" lang="zh-Hant">' + STATE[state].zh +
-                         '</span><span class="en" lang="en">' + STATE[state].en + '</span>';
-      }
-    } else if (chip) {
-      chip.remove();
-    }
-  });
-}
-markPast();
-setInterval(markPast, 60000);
-var track = document.getElementById('ntrack'), cur = 0;
-var navp = document.getElementById('navp'), navn = document.getElementById('navn');
-var NDAYS = track.children.length, vpos = NDAYS;
-// 前後各複製一整組，捲進複製區後靜默歸位 → 循環沒有跳點
-(function(){
-  var real = Array.prototype.slice.call(track.children);
-  for (var i = real.length - 1; i >= 0; i--) {
-    var c = real[i].cloneNode(true);
-    c.classList.add('clone');
-    c.setAttribute('aria-hidden', 'true');
-    track.insertBefore(c, track.firstChild);
-  }
-  real.forEach(function(el){
-    var c = el.cloneNode(true);
-    c.classList.add('clone');
-    c.setAttribute('aria-hidden', 'true');
-    track.appendChild(c);
-  });
-  markPast();
-})();
-function px(name, fb){
-  var v = parseFloat(getComputedStyle(track).getPropertyValue(name));
-  return isNaN(v) ? fb : v;
-}
-function panelStep(){
-  var a = track.children[0], b = track.children[1];
-  return b ? b.offsetLeft - a.offsetLeft : px('--dayw', 320) + px('--gap', 12);
-}
-function layout(){
-  if (!document.documentElement.classList.contains('nv')) return;
-  var nl = document.querySelector('.nlist'), car = document.querySelector('.ncar');
-  var dayw = px('--dayw', 320), gap = px('--gap', 12);
-  var W = track.clientWidth, step = dayw + gap, n = NDAYS;
-  // 七天全部放得下 → 關閉輪播互動
-  var full = (n * dayw + (n - 1) * gap) <= W;
-  track.classList.toggle('full', full);
-  nl.classList.toggle('full', full);
-  navp.style.display = navn.style.display = full ? 'none' : '';
-  if (full) {
-    track.style.paddingLeft = track.style.paddingRight = '0px';
-    track.scrollLeft = 0;
-    car.style.setProperty('--fadeL', '0px');
-    car.style.setProperty('--fadeR', '0px');
-    return;
-  }
-  // 當天置中：左右各留 (可視寬 − 單日寬)/2，兩端的日子也能捲到正中
-  var side = (W - dayw) / 2;
-  track.style.paddingLeft = track.style.paddingRight = side + 'px';
-  // 單側能完整顯示的鄰日數，以及最外側被切一半那天的可見寬度
-  var m = Math.floor(side / step);
-  var sliver = Math.max(0, side - m * step - gap);
-  var f = sliver > 3 ? Math.min(Math.max(sliver, 18), 130) : 0;
-  car.style.setProperty('--fadeL', f + 'px');
-  car.style.setProperty('--fadeR', f + 'px');
-  var r = car.getBoundingClientRect();
-  navp.style.left = '23px';
-  navn.style.left = (window.innerWidth - 23) + 'px';
-}
-window.addEventListener('resize', function(){ measureDock(); syncRows(); layout(); goDay(cur + NDAYS, false); updateDock(); });
-// 各日的同一小時列取最大高度，讓七天橫向對齊；空班自然留白
-var ndock = document.getElementById('ndock');
-function measureDock(){
-  var t = document.querySelector('.top');
-  var h = Math.round(t.getBoundingClientRect().height);
-  document.documentElement.style.setProperty('--dockH', h + 'px');
-}
-// 把 dock 的星期換成第 k 片面板（k 是軌道上的實際索引）
-function setDockDay(k){
-  var panel = track.children[k];
-  if (!panel) return;
-  var hd = panel.querySelector('.dhd');
-  if (hd && ndock.dataset.k !== String(k)) {
-    ndock.innerHTML = hd.innerHTML;
-    ndock.dataset.k = String(k);
-  }
-  ndock.classList.toggle('istoday', panel.classList.contains('today'));
-}
-function updateDock(){
-  if (!document.documentElement.classList.contains('nv')) return;
-  setDockDay(vpos);
-  var dockH = parseFloat(getComputedStyle(document.documentElement)
-    .getPropertyValue('--dockH')) || 92;
-  // 只有面板內的標頭「整個」捲進固定列底下之後才接手，否則會同時出現兩個星期
-  var hd = (track.children[vpos] || {}).querySelector
-    ? track.children[vpos].querySelector('.dhd') : null;
-  var gone = hd ? hd.getBoundingClientRect().bottom <= dockH + 1
-                : document.querySelector('.nlist').getBoundingClientRect().top < dockH;
-  var show = gone && !track.classList.contains('full');
-  ndock.classList.toggle('show', show);
-  track.classList.toggle('pinned', show);
-}
-// 橫向捲動時即時跟隨（不等吸附結束），否則手機慣性滑動期間星期會停在舊的那天
-var swipeRaf = 0;
-track.addEventListener('scroll', function(){
-  if (swipeRaf) return;
-  swipeRaf = requestAnimationFrame(function(){
-    swipeRaf = 0;
-    if (track.classList.contains('full')) return;
-    setDockDay(Math.round(track.scrollLeft / panelStep()));
-  });
-}, {passive: true});
-var dockRaf = 0;
-window.addEventListener('scroll', function(){
-  if (dockRaf) return;
-  dockRaf = requestAnimationFrame(function(){ dockRaf = 0; updateDock(); });
-}, {passive: true});
-function syncRows(){
-  if (!document.documentElement.classList.contains('nv')) return;
-  var gut = document.getElementById('ngut');
-  var head = gut.querySelector('.ngc.head');
-  var hs = [], hd = 0;
-  var heads = track.querySelectorAll('.dgrp > .dhd');
-  Array.prototype.forEach.call(heads, function(el){
-    el.style.height = 'auto';
-    hd = Math.max(hd, el.getBoundingClientRect().height);
-  });
-  Array.prototype.forEach.call(heads, function(el){ el.style.height = hd + 'px'; });
-  Array.prototype.forEach.call(gut.querySelectorAll('.ngc[data-h]'), function(g){
-    hs.push(g.dataset.h);
-  });
-  head.style.height = hd + 'px';
-  hs.forEach(function(h){
-    var rows = track.querySelectorAll('.hrow[data-h="' + h + '"]');
-    var g = gut.querySelector('.ngc[data-h="' + h + '"]');
-    var mx = 0;
-    Array.prototype.forEach.call(rows, function(r){ r.style.height = 'auto'; });
-    g.style.height = 'auto';
-    Array.prototype.forEach.call(rows, function(r){
-      mx = Math.max(mx, r.scrollHeight);
-    });
-    mx = Math.max(mx, g.scrollHeight);
-    Array.prototype.forEach.call(rows, function(r){ r.style.height = mx + 'px'; });
-    g.style.height = mx + 'px';
-  });
-}
-function markCur(){
-  Array.prototype.forEach.call(track.children, function(c, k){
-    c.classList.toggle('cur', k === vpos);
-  });
-}
-function goDay(v, smooth){
-  if (track.classList.contains('full')) { vpos = NDAYS; cur = 0; return; }
-  vpos = v;
-  cur = ((v - NDAYS) % NDAYS + NDAYS) % NDAYS;
-  markCur();
-  updateDock();
-  track.scrollTo({left: v * panelStep(), behavior: smooth ? 'smooth' : 'auto'});
-}
-// 停在複製區時，把捲動位置搬回中央那一組（畫面完全相同，看不出來）
-function normalize(){
-  if (vpos < NDAYS || vpos >= NDAYS * 2) {
-    vpos = cur + NDAYS;
-    track.scrollLeft = vpos * panelStep();
-    markCur();
-  }
-}
-navp.addEventListener('click', function(){ goDay(vpos - 1, true); });
-navn.addEventListener('click', function(){ goDay(vpos + 1, true); });
-var st;
-track.addEventListener('scroll', function(){
-  clearTimeout(st);
-  st = setTimeout(function(){
-    if (track.classList.contains('full')) return;
-    vpos = Math.round(track.scrollLeft / panelStep());
-    cur = ((vpos - NDAYS) % NDAYS + NDAYS) % NDAYS;
-    markCur();
-    normalize();
-    updateDock();
-  }, 110);
-});
-(function(){
-  var down = false, x0 = 0, s0 = 0, moved = 0;
-  track.addEventListener('pointerdown', function(e){
-    if (e.pointerType === 'touch' || track.classList.contains('full')) return;
-    down = true; moved = 0; x0 = e.clientX; s0 = track.scrollLeft;
-    track.classList.add('drag');
-  });
-  track.addEventListener('pointermove', function(e){
-    if (!down) return;
-    var d = e.clientX - x0;
-    if (Math.abs(d) > 3) moved = 1;
-    track.scrollLeft = s0 - d;
-  });
-  function end(){
-    if (!down) return;
-    down = false; track.classList.remove('drag');
-    goDay(Math.round(track.scrollLeft / panelStep()), true);
-  }
-  track.addEventListener('pointerup', end);
-  track.addEventListener('pointercancel', end);
-  track.addEventListener('pointerleave', end);
-  track.addEventListener('click', function(e){ if (moved) e.preventDefault(); }, true);
-})();
-// 首次進入定位到今天（週一=0 … 週日=6）
-(document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve())
-  .then(function(){ measureDock(); syncRows(); layout(); goDay(cur + NDAYS, false); updateDock(); });
-measureDock();
-syncRows();
-layout();
-goDay(((new Date().getDay() + 6) % 7) + NDAYS, false);
-updateDock();
+PAGE = re.sub(r"\{\{(\w+)\}\}", lambda m: FILL[m.group(1)], asset("index.html"))
 
-var vseg = document.getElementById('view');
-function setView(v){
-  document.documentElement.className = (v === 'n' ? 'nv' : 'wv');
-  Array.prototype.forEach.call(vseg.children, function(x){
-    var on = x.dataset.v === v;
-    x.classList.toggle('on', on);
-    x.setAttribute('aria-pressed', on ? 'true' : 'false');
-  });
-  try { localStorage.setItem('yoga-view', v); } catch(e) {}
-  fitCells();
-  measureDock();
-  if (v === 'n') requestAnimationFrame(function(){ syncRows(); layout(); goDay(cur + NDAYS, false); updateDock(); });
-  else ndock.classList.remove('show');
-}
-vseg.addEventListener('click', function(e){
-  var b = e.target.closest('button'); if(!b) return;
-  setView(b.dataset.v);
-});
-setView(document.documentElement.classList.contains('nv') ? 'n' : 'w');
-
-// 4.1.3 篩選結果用 aria-live 朗讀
-function announce(){
-  var live = document.getElementById('live');
-  if (!live) return;
-  var en = document.getElementById('sheet').classList.contains('en');
-  if (picked === null) {
-    live.textContent = en ? 'Showing all classes' : '顯示全部課程';
-  } else {
-    var n = document.querySelectorAll('.ev.match').length;
-    var k = document.querySelector('.key[data-cat="' + picked + '"]');
-    var lab = k ? (k.querySelector(en ? '.en' : '.zh') || {}).textContent : picked;
-    live.textContent = en ? ('Filtered: ' + lab + ', ' + n + ' classes')
-                          : ('已篩選：' + lab + '，共 ' + n + ' 堂');
-  }
-}
-// 分類篩選：單選，再點同一個即取消
-var picked = null;
-function applyFilter(){
-  var sheet = document.getElementById('sheet'), keys = document.querySelector('.keys');
-  var on = picked !== null;
-  sheet.classList.toggle('on', on);
-  keys.classList.toggle('on', on);
-  document.querySelectorAll('.key').forEach(function(k){
-    k.classList.toggle('sel', k.dataset.cat === picked);
-    k.setAttribute('aria-pressed', k.dataset.cat === picked ? 'true' : 'false');
-  });
-  document.querySelectorAll('.ev,.lc').forEach(function(ev){
-    ev.classList.toggle('match', ev.dataset.cat === picked);
-  });
-  announce();
-}
-document.querySelector('.keys').addEventListener('click', function(e){
-  var k = e.target.closest('.key'); if(!k) return;
-  picked = (picked === k.dataset.cat) ? null : k.dataset.cat;
-  applyFilter();
-});
-document.getElementById('clear').addEventListener('click', function(){
-  picked = null; applyFilter();
-});
-function applyLang(l){
-  var sheet = document.getElementById('sheet'), en = (l === 'en');
-  sheet.classList.toggle('en', en);
-  document.documentElement.lang = en ? 'en' : 'zh-Hant';
-  var seg = document.getElementById('lang');
-  Array.prototype.forEach.call(seg.children, function(x){
-    var on = x.dataset.l === l;
-    x.classList.toggle('on', on);
-    x.setAttribute('aria-pressed', on ? 'true' : 'false');
-  });
-  // 卡片的無障礙名稱也要跟著換語言
-  document.querySelectorAll('[data-lab-en]').forEach(function(el){
-    if (!el.dataset.labZh) el.dataset.labZh = el.getAttribute('aria-label');
-    el.setAttribute('aria-label', en ? el.dataset.labEn : el.dataset.labZh);
-  });
-  announce();
-}
-document.getElementById('lang').addEventListener('click', function(e){
-  var b = e.target.closest('button'); if(!b) return;
-  applyLang(b.dataset.l);
-  fitCells();
-  syncRows();
-});
-</script>""")
-a("""<script>
-document.getElementById('dl').addEventListener('click', function(){
-  var btn=this, sheet=document.getElementById('sheet');
-  btn.disabled=true; btn.classList.add('busy'); btn.setAttribute('aria-busy','true');
-  var hide=sheet.querySelectorAll('[data-noexport]');
-  (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(function(){
-    fitCells();
-    var nar = document.documentElement.classList.contains('nv');
-    sheet.classList.add('nopast','flat','noto');
-    document.querySelectorAll('.stt').forEach(function(c){ c.remove(); });
-    document.querySelectorAll('.st-done,.st-live').forEach(function(c){
-      c.classList.remove('st-done','st-live');
-    });
-    if (nar && !track.classList.contains('full')) sheet.classList.add('weekexp');
-    hide.forEach(function(el){el.style.visibility='hidden'});
-    return html2canvas(sheet,{scale:2,backgroundColor:'#F4F0E9',useCORS:true,
-      width:sheet.offsetWidth,height:sheet.offsetHeight,windowWidth:sheet.offsetWidth});
-  }).then(function(canvas){
-    hide.forEach(function(el){el.style.visibility=''});
-    sheet.classList.remove('nopast','flat','noto','weekexp');
-    markPast();
-    var a=document.createElement('a');
-    var en = sheet.classList.contains('en');
-    var nv = document.documentElement.classList.contains('nv');
-    a.download = (en ? '__FNE__' : '__FN__')
-      .replace('.png', (nv ? (en ? '-vertical' : '-直式') : '') + '.png');
-    a.href=canvas.toDataURL('image/png'); a.click();
-    btn.disabled=false; btn.classList.remove('busy'); btn.removeAttribute('aria-busy');
-  }).catch(function(e){
-    hide.forEach(function(el){el.style.visibility=''});
-    sheet.classList.remove('nopast','flat','noto','weekexp');
-    markPast();
-    btn.disabled=false; btn.classList.remove('busy'); btn.removeAttribute('aria-busy');
-    alert('Export failed: '+e);
-  });
-});
-</script>""".replace("__FN__", "%s-%d月課表.png" % (BRANCH, MONTH)).replace("__FNE__", "%s-%s-schedule.png" % (EN_BRANCH.replace(" ", "-"), EN_MONTH[MONTH - 1])))
-a('</body></html>')
-
-open(OUT, "w", encoding="utf-8").write("\n".join(o))
+open(OUT, "w", encoding="utf-8").write(PAGE)
 print("wrote", OUT, "grid", int(GH), "classes", sum(len(d) for d in S))
 for k, v in sorted(TMAP.items()):
     if len(v) > 1:

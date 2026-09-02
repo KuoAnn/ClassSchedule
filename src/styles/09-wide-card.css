@@ -1,0 +1,71 @@
+/* 09-wide-card.css — 寬版課程卡 .ev 與縮字級階梯 f1–f4 */
+.ev{position:absolute;padding:6px 10px;border:1px solid;border-left-width:3px;overflow:hidden;
+border-radius:7px;display:flex;flex-direction:column;gap:4px}
+.ev>*{flex:0 0 auto;min-width:0}
+.ev .tp{min-width:0}
+.ev .nr{display:flex;align-items:flex-start;gap:6px;min-width:0}
+.ev .n{flex:1;min-width:0;font-size:16px;font-weight:500;line-height:1.2;letter-spacing:.01em;overflow-wrap:break-word;
+display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ev .t{font-size:13.5px;color:var(--ink2);line-height:1.26;font-variant-numeric:tabular-nums}
+.ev .t .hh{white-space:nowrap}
+.ev .t .du{font-style:normal;margin-left:1px;font-size:.86em;color:var(--ink3);white-space:nowrap}
+.ev .m{font-size:13.5px;color:var(--ink3);line-height:1.26;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev .m .tg{font-style:normal;font-size:10.5px;background:#efeae2;border-radius:3px;
+padding:1px 4px;margin-left:4px;vertical-align:1px;letter-spacing:.02em;color:#635d55}
+.ev .lv{flex:0 0 auto;font-style:normal;font-size:10.5px;font-weight:500;color:#7f643a;
+background:#efeae2;border-radius:4px;padding:0 5px;letter-spacing:.04em;
+line-height:1.25;white-space:nowrap}
+.ev .bt{margin-top:auto;display:flex;flex-wrap:wrap;align-items:baseline;gap:1px 8px}
+.ev .x{display:flex;flex-wrap:wrap;gap:2px 4px;max-width:100%}
+.ev .x>span{display:inline-block;font-weight:500;font-size:11px;line-height:1.4;
+border-radius:4px;padding:1px 5px;letter-spacing:.02em;white-space:nowrap}
+.ev .x>.sub{color:#33506b;background:#dde6ee}
+.ev .x>.stop{color:#8f3b24;background:#f4ddd9}
+.ev .cg{margin-left:auto;font-size:10.5px;font-weight:500;line-height:1.4;letter-spacing:.04em;
+white-space:nowrap;border-radius:4px;padding:1px 5px}
+.ev.nar{padding:5px 6px;gap:3px}
+.ev.nar .nr{gap:3px}
+.ev.nar .n{font-size:14px;line-height:1.16;overflow-wrap:anywhere;-webkit-line-clamp:4}
+.ev.nar .lv{font-size:10px;padding:0 4px;line-height:1.2}
+.ev.nar .t{font-size:11.5px}
+.ev.nar .m{font-size:11.5px;white-space:normal;line-height:1.24;text-overflow:clip;overflow-wrap:break-word}
+.ev.nar .x>span{font-size:10px;padding:1px 4px;white-space:normal}
+.ev.nar .cg{font-size:10px;padding:1px 5px}
+.ev.nar .m .tg{font-size:10px;padding:0 4px;margin-left:1px}
+.ev.f1{gap:2px;padding-top:4px;padding-bottom:4px}
+.ev.f1 .n{font-size:11.6px;line-height:1.1}
+.ev.f1 .t,.ev.f1 .m{font-size:10px;line-height:1.14}
+.ev.f1 .lv,.ev.f2 .lv{font-size:9.5px;line-height:1.15}
+.ev.f1 .x>span{font-size:9.5px}
+.ev.f2{gap:1px;padding:3px 7px}
+.ev.f2 .n{font-size:10.8px;line-height:1.08}
+.ev.f2 .t,.ev.f2 .m{font-size:9.5px;line-height:1.1}
+.ev.f2 .x>span,.ev.f2 .cg{font-size:9px;padding:0 4px}
+.ev.f3{gap:0;padding:2px 6px}
+.ev.f3 .n{font-size:10px;line-height:1.05}
+.ev.f3 .t,.ev.f3 .m{font-size:9px;line-height:1.08}
+.ev.f3 .x>span,.ev.f3 .cg{font-size:8.5px;padding:0 3px}
+.ev.f3 .lv,.ev.f3 .m .tg{display:none}
+.ev.f4{gap:0;padding:2px 5px}
+.ev.f4 .n{font-size:9.5px;line-height:1.04}
+.ev.f4 .t,.ev.f4 .m{font-size:8.5px;line-height:1.06}
+.ev.f4 .x>span{font-size:8px;padding:0 3px}
+.ev.f4 .lv,.ev.f4 .cg,.ev.f4 .m .tg,.ev.f4 .du{display:none}
+.ev.f1{gap:1px;padding-top:4px;padding-bottom:4px}
+.ev.f1 .n{font-size:11.6px;line-height:1.1}
+.ev.f1 .t,.ev.f1 .m{font-size:10px;line-height:1.14}
+.ev.f1 .x>span{font-size:9.5px}
+.ev.f2{gap:0;padding:3px 7px}
+.ev.f2 .n{font-size:10.8px;line-height:1.08}
+.ev.f2 .t,.ev.f2 .m{font-size:9.5px;line-height:1.1}
+.ev.f2 .x{font-size:9px;line-height:1.1}
+.ev.f3{gap:0;padding:2px 6px}
+.ev.f3 .n{font-size:10px;line-height:1.05}
+.ev.f3 .t,.ev.f3 .m{font-size:9px;line-height:1.08}
+.ev.f3 .x{font-size:8.5px;line-height:1.08}
+.ev.f3 .lv,.ev.f3 .m .tg{display:none}
+.ev.f4{gap:0;padding:2px 5px}
+.ev.f4 .n{font-size:9.5px;line-height:1.04}
+.ev.f4 .t,.ev.f4 .m{font-size:8.5px;line-height:1.06}
+.ev.f4 .x>span{font-size:8px;padding:0 3px}
+.ev.f4 .lv,.ev.f4 .cg,.ev.f4 .m .tg,.ev.f4 .du{display:none}

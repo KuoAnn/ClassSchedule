@@ -1,0 +1,15 @@
+/* 10-legend.css — 分類色票與篩選按鈕 */
+.keys{margin-top:11px}
+.keys{display:flex;flex-wrap:wrap;gap:9px 22px;align-items:center}
+.keys.on .key:not(.sel){opacity:.4}
+.key{border:0;background:transparent;font-family:inherit;cursor:pointer;
+padding:5px 7px;margin:-5px -3px;border-radius:7px;min-height:26px;
+display:flex;align-items:center;gap:7px;font-size:14px;color:var(--ink2);white-space:nowrap}
+.key:hover{background:rgba(0,0,0,.05)}
+.key.sel{background:rgba(0,0,0,.08)}
+.key i{width:14px;height:14px;flex:0 0 14px;display:block;border-radius:4px}
+.clear{display:none;border:1px solid var(--rule2);background:#fff;font-family:inherit;
+font-size:13px;color:var(--ink2);padding:5px 14px;border-radius:16px;cursor:pointer;
+letter-spacing:.06em;margin-left:4px}
+.clear:hover{background:#faf7f1}
+.keys.on .clear{display:inline-block}

@@ -1,0 +1,21 @@
+/* 11-status.css — 當天課程狀態（結束／進行中）與篩選淡化 */
+/* 結束：整張卡淡化（此處刻意不套 WCAG 對比要求，詳見 AGENTS.md 規格） */
+.ev.st-done,.lc.st-done{filter:opacity(.4)}
+/* 狀態標籤與難度標籤共用右上角，尺寸一致；有狀態時難度不顯示 */
+.stt{flex:0 0 auto;font-style:normal;font-weight:500;font-size:10.5px;line-height:1.25;
+border-radius:4px;padding:0 5px;letter-spacing:.04em;white-space:nowrap}
+.st-done .lv,.st-live .lv{display:none}
+.st-done .stt{color:#5c5852;background:#e4e0d8}
+.st-live .stt{color:#2f5e37;background:#d7e7d9}
+.st-live .stt::before{content:"";display:inline-block;width:5px;height:5px;
+border-radius:50%;background:#3f7a49;margin-right:5px;vertical-align:1px;
+animation:livepulse 1.5s ease-in-out infinite}
+@keyframes livepulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.28;transform:scale(.72)}}
+.ev.nar .stt,.ev.nar .lv{font-size:9px;padding:0 3px;letter-spacing:0;
+max-width:50%;overflow:hidden;text-overflow:ellipsis}
+.lc .stt{font-size:11px;padding:1px 6px;line-height:1.3}
+.sheet.nopast .st-done{filter:none}
+.sheet.on .ev,.sheet.on .lc{opacity:.14}
+.sheet.on .ev.match,.sheet.on .lc.match{opacity:1}
+.key u{text-decoration:none;color:var(--ink3);font-size:13px;margin-left:5px}
+.key u b{font-weight:500;color:var(--ink)}

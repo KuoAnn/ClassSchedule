@@ -1,0 +1,18 @@
+/* 03-view-switch.css — 寬版／窄版切換（html.wv / html.nv）與窄版尺寸縮放 */
+.wrap{width:var(--sheetw);margin:0 auto}
+html.nv .wrap{width:auto;max-width:none}
+html.nv .sheet{padding:16px 14px 20px}
+html.nv .wideonly{display:none}
+html.wv .narrowonly{display:none}
+html.nv .hd h1{font-size:26px}
+html.nv .hd h1 em{font-size:14px;margin-left:11px}
+html.nv .tools{gap:7px}
+html.nv .seg{padding:2px}
+html.nv .seg button{padding:6px 11px;font-size:13px}
+html.nv #view button{padding:6px 9px}
+html.nv #view svg{width:16px;height:16px}
+html.nv #dl{width:34px;height:34px}
+html.nv #dl svg{width:16px;height:16px}
+html.nv .keys{gap:0 16px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
+margin:9px -14px 0 0;padding:1px 14px 3px 0}
+html.nv .keys::-webkit-scrollbar{display:none}
