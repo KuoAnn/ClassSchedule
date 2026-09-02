@@ -635,12 +635,17 @@ STYLES = "\n".join([
 SCRIPTS = "\n".join([
     "// 由 build.py 依這份課表產生（08-export.js 讀 window.SCHEDULE，09-liff.js 讀 window.LIFF_ID）",
     "// 四張圖由 scripts/shots.py 在 build 之後畫進 dist/，檔名以這裡為準",
-    'window.SCHEDULE = {png: {w: {zh: "%s", en: "%s"}, n: {zh: "%s", en: "%s"}}};' % (
-        "%s-%d月課表.png" % (BRANCH, MONTH),
-        "%s-%s-schedule.png" % (EN_BRANCH.replace(" ", "-"), EN_MONTH[MONTH - 1]),
-        "%s-%d月課表-直式.png" % (BRANCH, MONTH),
-        "%s-%s-schedule-vertical.png" % (EN_BRANCH.replace(" ", "-"),
-                                         EN_MONTH[MONTH - 1])),
+    # 檔名不帶月份：站上永遠只有當月這一份課表，網址固定才貼得出去（LINE 圖文選單、
+    # 官網、書籤都是一次設定長期使用）。月份印在圖裡，進了檔名就等於每個月換一組網址。
+    # stamp 是「內容換了沒」的記號，只給下載鈕當快取破壞用（Pages 是 max-age=600），
+    # 分享用的網址仍然是乾淨的固定網址。
+    'window.SCHEDULE = {png: {w: {zh: "%s", en: "%s"}, n: {zh: "%s", en: "%s"}},'
+    ' stamp: "%d-%s"};' % (
+        "%s-課表.png" % BRANCH,
+        "%s-schedule.png" % EN_BRANCH.replace(" ", "-"),
+        "%s-課表-直式.png" % BRANCH,
+        "%s-schedule-vertical.png" % EN_BRANCH.replace(" ", "-"),
+        MONTH, VERSION),
     'window.LIFF_ID = "%s";' % _a.liff_id.replace('"', ""),
     bundle("js", skip=("01-boot.js",)),
 ])

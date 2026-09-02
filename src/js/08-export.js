@@ -10,9 +10,13 @@ function shotUrl(){
   var m = (window.SCHEDULE && window.SCHEDULE.png) || {};
   var name = (m[v] || {})[l];
   if (!name) return '';
-  // 圖跟 HTML 同一層；檔名有中文，要 encode 才貼得回網址
+  // 圖跟 HTML 同一層；檔名有中文，要 encode 才貼得回網址。
+  // 檔名固定不帶月份，所以下載時補一個 stamp 破快取（Pages 是 max-age=600，
+  // 換月之後那十分鐘會拿到上個月的圖）；分享用的網址不必帶，過幾分鐘自然更新。
+  var q = (window.SCHEDULE && window.SCHEDULE.stamp)
+    ? '?s=' + encodeURIComponent(window.SCHEDULE.stamp) : '';
   return location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '')
-    + encodeURIComponent(name);
+    + encodeURIComponent(name) + q;
 }
 document.getElementById('dl').addEventListener('click', function(){
   var url = shotUrl();
