@@ -508,6 +508,16 @@ border-radius:4px;padding:1px 6px;letter-spacing:.04em;white-space:nowrap}
 .trow{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
 .tools{display:flex;gap:10px;align-items:center;flex:0 0 auto}
 html.wv .tools{position:fixed;top:14px;right:16px;z-index:32}
+/* 視窗比紙張窄時（例如手機用寬版），固定定位的功能列會蓋到標題，
+   改成排在標題下方、靠左，隨標題一起 sticky */
+@media (max-width:900px){
+  html.wv .tools{position:static}
+  html.wv .trow{flex-direction:column;align-items:flex-start;gap:11px}
+  html.wv .keys{max-width:calc(100vw - 40px);flex-wrap:nowrap;overflow-x:auto;
+    scrollbar-width:none;padding-bottom:3px}
+  html.wv .keys::-webkit-scrollbar{display:none}
+  html.wv .top{max-width:calc(100vw - 40px)}
+}
 
 .tools button{font:400 14px/1 inherit;color:var(--ink2);background:#fff;border:1px solid var(--rule2);
 padding:11px 20px;cursor:pointer;letter-spacing:.06em;border-radius:22px}
