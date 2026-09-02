@@ -9,9 +9,9 @@
 
 ```text
 src/                  版面範本資源，可個別重用（打包時內嵌成單一 HTML）
-  index.html          外框；{{title}} {{sheet_width}} {{styles}} {{boot}} {{content}} {{scripts}}
-  styles/01..12*.css  樣式，數字前綴＝串接順序
-  js/01..08*.js       腳本，數字前綴＝串接順序
+  index.html          外框；{{title}} {{og_desc}} {{styles}} {{boot}} {{content}} {{scripts}}
+  styles/01..13*.css  樣式，數字前綴＝串接順序
+  js/01..09*.js       腳本，數字前綴＝串接順序
   icons/*.svg         內嵌圖示
 scripts/build.py      產生器：CSV → 卡片 HTML，再把 src/ 內嵌成單一檔
 scripts/run.sh        產檔 + 四項檢查
@@ -49,6 +49,36 @@ dist/                 產物
    PNG 檔名走 `window.SCHEDULE`（由 build 產生，`08-export.js` 沒有時退回 `schedule.png`）。
 4. **`src/index.html` 的 `{{…}}` 佔位符要與 `build.py` 的 `FILL` 一致**，
    多打少打都會在 build 時直接丟 `KeyError`（這是刻意的，不要改成靜默略過）。
+
+## LINE LIFF：五條約束
+
+站台掛 GitHub Pages，實際由 LINE LIFF 開啟，所以「手機 WebView」才是主場景。
+**本站是純靜態課表、不讀任何會員資料**，因此不呼叫 `liff.login()` / `liff.getProfile()`，
+也不設 `withLoginOnExternalBrowser` — 一般瀏覽器開同一個網址不會被導去登入。
+
+1. **viewport 是動態的，不要再寫死。**
+   `src/index.html` 預設 `width=device-width,initial-scale=1,viewport-fit=cover`；
+   寬版是固定寬的海報版面，切過去時由 `setViewport()`（定義在 `01-boot.js`，
+   `05-view.js` 也會呼叫）改成 `width=<--sheetw>`，且**不給 initial-scale**，
+   讓瀏覽器整頁縮放。版面寬是從 CSS 變數 `--sheetw` 讀的，不是 build 寫死的字串，
+   所以「build 期的值不寫死在資源檔裡」這條仍然成立。
+2. **`html` 的 class 只能用 `classList` 動，不可以直接指派 `className`。**
+   `01-boot.js` 在繪製前掛上的 `.liff`（UA 含 `" Line/"`）會被整串覆蓋掉，
+   `inLINE()` 就會回 false，長按存圖與 canvas 降階都失效。這個坑踩過一次。
+3. **在 LINE 裡不能用 `<a download>` 存圖。**
+   LINE 的 WebView（iOS 尤其）直接沒反應。`08-export.js` 改成呼叫
+   `saveImage()`（`09-liff.js`），在 LINE 裡把 PNG 攤成全螢幕讓使用者長按儲存；
+   `.shot img` 的 `-webkit-touch-callout:default` 不能拿掉，拿掉就沒有長按選單。
+   覆蓋層是點下去才建出來的 DOM，所以 `occl.py` / `wcag.py` 掃不到也不需要掃。
+4. **手機的 canvas 上限比桌機低。**
+   `08-export.js` 只在 LINE 或視窗 < 900px 時把 `scale` 壓到 12M 畫素以內；
+   桌機維持 `scale:2`，匯出結果與過去完全相同。
+5. **`13-liff.css` 放在最後是刻意的。**
+   裡面都是要蓋過前面版型的補丁，而且 `html.nv .hd h1` 這種選擇器的 specificity
+   比 `@media` 裡的 `.hd h1` 高 — 想在窄版覆寫尺寸，選擇器就得一樣帶 `html.nv`。
+
+`LIFF_ID` 由 `build.py --liff-id`（或環境變數 `LIFF_ID`，CI 走 repo Variable）帶入，
+產生 `window.LIFF_ID`；沒設也不會壞，只是不初始化 SDK。設定步驟見 README。
 
 ## 參考資訊
 

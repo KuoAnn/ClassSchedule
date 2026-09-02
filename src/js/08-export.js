@@ -14,18 +14,21 @@ document.getElementById('dl').addEventListener('click', function(){
     });
     if (nar && !track.classList.contains('full')) sheet.classList.add('weekexp');
     hide.forEach(function(el){el.style.visibility='hidden'});
-    return html2canvas(sheet,{scale:2,backgroundColor:'#F4F0E9',useCORS:true,
+    // 手機 WebView 的 canvas 上限比桌機低，畫素太多會整個失敗；桌機仍維持 scale 2
+    var area = sheet.offsetWidth * sheet.offsetHeight;
+    var scale = (inLINE() || window.innerWidth < 900)
+      ? Math.max(1, Math.min(2, Math.sqrt(12e6 / area))) : 2;
+    return html2canvas(sheet,{scale:scale,backgroundColor:'#F4F0E9',useCORS:true,
       width:sheet.offsetWidth,height:sheet.offsetHeight,windowWidth:sheet.offsetWidth});
   }).then(function(canvas){
     hide.forEach(function(el){el.style.visibility=''});
     sheet.classList.remove('nopast','flat','noto','weekexp');
     markPast();
-    var a=document.createElement('a');
     var en = sheet.classList.contains('en');
     var nv = document.documentElement.classList.contains('nv');
-    a.download = (en ? PNG.en : PNG.zh)
+    var name = (en ? PNG.en : PNG.zh)
       .replace('.png', (nv ? (en ? '-vertical' : '-直式') : '') + '.png');
-    a.href=canvas.toDataURL('image/png'); a.click();
+    saveImage(canvas.toDataURL('image/png'), name);
     btn.disabled=false; btn.classList.remove('busy'); btn.removeAttribute('aria-busy');
   }).catch(function(e){
     hide.forEach(function(el){el.style.visibility=''});

@@ -22,8 +22,10 @@ pointer-events:none;z-index:2}
 .ncar::before{left:0;width:var(--fadeL,0px);background:linear-gradient(to right,var(--page) 14%,rgba(244,240,233,0))}
 .ncar::after{right:0;width:var(--fadeR,0px);background:linear-gradient(to left,var(--page) 14%,rgba(244,240,233,0))}
 .hrow{border-top:1px solid var(--rule);padding-top:5px;box-sizing:border-box;overflow:hidden}
+/* overscroll-behavior-x:contain — 輪播滑到頭時不要把手勢傳給外層，
+   在 LINE 內建瀏覽器裡那會變成「往回上一頁／關掉 LIFF」 */
 .ntrack{display:flex;align-items:flex-start;gap:var(--gap);
-overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
+overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scrollbar-width:none;
 -webkit-overflow-scrolling:touch;cursor:grab}
 .ntrack::-webkit-scrollbar{display:none}
 .ntrack.drag{cursor:grabbing;scroll-snap-type:none}

@@ -36,6 +36,10 @@ jobs:
           python -m playwright install --with-deps chromium
 
       - name: 產檔
+        # LIFF_ID 設在 repo 的 Variables（Settings → Secrets and variables → Actions → Variables）
+        # 沒設也不會壞：09-liff.js 只是不初始化 LINE SDK，課表照樣顯示
+        env:
+          LIFF_ID: ${{ vars.LIFF_ID }}
         run: python scripts/build.py
 
       - name: 遮蔽檢查

@@ -10,6 +10,7 @@
 - 分類色票可點擊篩選
 - 一鍵匯出 PNG（樣式跟隨當前模式）
 - 全站通過 WCAG AA
+- 可直接掛成 **LINE LIFF**（純靜態、不讀會員資料，不需要登入）
 
 ## 快速開始
 
@@ -51,8 +52,8 @@ python3 scripts/build.py \
 
 ```text
 src/index.html      外框（{{styles}}、{{boot}}、{{content}}、{{scripts}} 由 build.py 填）
-src/styles/*.css    12 份樣式，檔名的數字前綴就是串接順序（＝cascade 順序）
-src/js/*.js         8 份腳本，同樣依數字前綴串接
+src/styles/*.css    13 份樣式，檔名的數字前綴就是串接順序（＝cascade 順序）
+src/js/*.js         9 份腳本，同樣依數字前綴串接
 src/icons/*.svg     內嵌圖示（版型切換、下載、翻頁、早／午／晚）
 ```
 
@@ -61,7 +62,8 @@ src/icons/*.svg     內嵌圖示（版型切換、下載、翻頁、早／午／
 - `01-tokens.css` 的 `--gy` / `--gut` / `--sheetw` 是離線預覽用的預設值，
   實際尺寸由 build 依課表算出後在樣式尾端覆寫
 - `08-export.js` 的 PNG 檔名讀 `window.SCHEDULE`，由 build 產生；沒有時退回 `schedule.png`
-- `01-boot.js` 會在畫面繪製前決定版型，必須留在最前面
+- `01-boot.js` 會在畫面繪製前決定版型與 viewport，必須留在最前面
+- `13-liff.css` / `09-liff.js` 是 LINE WebView 專用的補丁，放在最後（見下節）
 
 單獨改版面時，直接編輯 `src/` 下的檔案再重跑 build 即可，不需要碰 Python。
 
@@ -98,6 +100,46 @@ workflow 裡的 `enablement: true` 只是保險 — 站已存在時它單純讀�
 不想用 Pages 就把 `pages` job 移掉，`build` 的 artifact 照樣拿得到。
 
 只改 `*.md` 的 commit 不會觸發。
+
+## LINE LIFF
+
+站台掛在 GitHub Pages，透過 LINE LIFF 開啟。**本站是純靜態課表，不讀任何會員資料**，
+所以不呼叫 `liff.login()` / `liff.getProfile()`，也不設 `withLoginOnExternalBrowser` —
+用一般瀏覽器開同一個網址不會被導去登入。
+
+### 設定
+
+1. LINE Developers → Provider → **LINE Login** channel → **LIFF** → Add
+2. **Endpoint URL** 填 Pages 網址（<https://kuoann.github.io/ClassSchedule/>）
+3. **Size** 選 **Full**（課表很長，compact/tall 會太擠）
+4. Scopes 只留 `profile` 以外的預設即可 — 本站不會去要授權
+5. 把拿到的 LIFF ID 設成 repo 的 Actions Variable `LIFF_ID`
+   （Settings → Secrets and variables → Actions → **Variables**）
+6. 分享 `https://liff.line.me/<LIFF ID>` 給學員
+
+`LIFF_ID` 沒設也不會壞：`09-liff.js` 只是不初始化 SDK，課表照樣顯示。
+本機要帶的話：
+
+```bash
+python3 scripts/build.py --liff-id 1234567890-abcdefgh
+# 或 LIFF_ID=1234567890-abcdefgh python3 scripts/build.py
+```
+
+### 為了 LINE 做了哪些事
+
+| 問題 | 做法 |
+|---|---|
+| 原本 `viewport` 寫死 `width=2040`，手機上整張海報縮到看不清 | 預設 `width=device-width`；切到寬版時 `01-boot.js` / `05-view.js` 才換成版面寬 |
+| LINE WebView 擋掉 `<a download>`，按了沒反應 | 在 LINE 裡改成把 PNG 攤成全螢幕，長按存到相簿（`09-liff.js` 的 `saveImage`） |
+| 手機 canvas 上限比桌機低，寬版匯出會整個失敗 | `08-export.js` 依版面面積把 scale 壓到 12M 畫素以內（桌機仍是 scale 2） |
+| iOS 把「11:00–12:00」判成電話號碼 | `<meta name="format-detection" content="telephone=no,date=no,address=no">` |
+| 瀏海／home indicator 蓋住工具列與底部 | `viewport-fit=cover` ＋ `env(safe-area-inset-*)`（`13-liff.css`） |
+| 輪播滑到底把手勢傳給外層，變成關掉 LIFF | `.ntrack{overscroll-behavior-x:contain}` |
+| 橫向時 WebView 自動放大字、點擊留灰影 | `-webkit-text-size-adjust:100%`、`-webkit-tap-highlight-color:transparent` |
+| 連結貼進聊天室沒有預覽 | `og:title` / `og:description`（由 build 依課表產生） |
+
+LINE 的判定靠 UA 裡的 `" Line/"`，`01-boot.js` 會在繪製前掛上 `html.liff`，
+JS 端用 `inLINE()` 讀同一個旗標。
 
 ## 無障礙
 

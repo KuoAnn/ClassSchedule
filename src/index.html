@@ -3,7 +3,17 @@
 <head>
 <meta charset="utf-8">
 <title>{{title}}</title>
-<meta name="viewport" content="width={{sheet_width}}">
+<!-- 窄版跟著裝置寬度（LIFF 一律是手機）；切到寬版時由 01-boot.js／05-view.js 改成版面寬 -->
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- 整頁都是「11:00–12:00」這種字串，不讓 iOS／LINE 自作主張判成電話或日期 -->
+<meta name="format-detection" content="telephone=no,date=no,address=no">
+<meta name="theme-color" content="#F4F0E9">
+<meta name="description" content="{{og_desc}}">
+<!-- 課表連結貼進 LINE 聊天室時的預覽卡 -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{title}}">
+<meta property="og:description" content="{{og_desc}}">
+<meta property="og:locale" content="zh_TW">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>

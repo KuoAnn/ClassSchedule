@@ -1,0 +1,44 @@
+/* 13-liff.css — LINE LIFF／手機 WebView：安全區、長按存圖的全螢幕圖片
+   放在最後是刻意的：這裡都是要蓋過前面版型預設值的補丁 */
+
+/* 瀏海與底部 home indicator：固定工具列與版面內距都退到安全區裡。
+   窄版輪播的 -14px 出血是相對 .sheet 內距算的，所以這裡加了 inset 之後
+   輪播仍然「剛好貼到可視邊緣」，不會被瀏海切到 */
+@supports (padding: env(safe-area-inset-left)){
+  .top{padding-top:calc(13px + env(safe-area-inset-top));
+    padding-left:calc(20px + env(safe-area-inset-left));
+    padding-right:calc(20px + env(safe-area-inset-right))}
+  html.nv .sheet{padding:16px calc(14px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left))}
+  .nav.p{margin-left:env(safe-area-inset-left)}
+  .nav.n{margin-left:calc(0px - env(safe-area-inset-right))}
+  @media (max-width:900px){
+    .top{padding-top:calc(10px + env(safe-area-inset-top));
+      padding-left:calc(14px + env(safe-area-inset-left));
+      padding-right:calc(14px + env(safe-area-inset-right))}
+  }
+}
+
+/* 手機真實寬度下的標題列：館名整塊不要被拆成「古／亭館」。
+   選擇器要帶 html.nv，否則會輸給 03-view-switch.css 的 html.nv .hd h1 */
+.hd h1 em{white-space:nowrap}
+@media (max-width:430px){
+  html.nv .hd h1{font-size:20px}
+  html.nv .hd h1 em{font-size:11.5px;margin-left:8px}
+  html.nv .tools{gap:5px}
+  html.nv .seg button{padding:5px 8px;font-size:12px}
+  html.nv #view button{padding:5px 7px}
+}
+
+/* 長按存圖：LINE 的 WebView 擋掉 <a download>，所以把匯出的 PNG 攤在全螢幕，
+   由使用者長按叫出「儲存影像」。-webkit-touch-callout 要留著，不然長按沒選單 */
+.shot{position:fixed;top:0;right:0;bottom:0;left:0;z-index:60;background:#1b1815;
+display:flex;flex-direction:column;
+padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+.shot-bar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+gap:12px;padding:13px 16px;color:#fff;font-size:14px;line-height:1.5;letter-spacing:.04em}
+.shot-x{flex:0 0 34px;width:34px;height:34px;padding:0;border:0;border-radius:50%;
+background:rgba(255,255,255,.16);color:#fff;font-size:16px;line-height:1;cursor:pointer}
+.shot-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;
+-webkit-overflow-scrolling:touch;padding:0 12px 16px}
+.shot img{display:block;width:100%;height:auto;border-radius:6px;
+-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}

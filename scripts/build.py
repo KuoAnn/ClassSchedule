@@ -10,6 +10,9 @@ _p.add_argument("--branch", help="館別，預設由檔名推斷")
 _p.add_argument("--out", help="輸出 HTML 路徑，預設 dist/<館別>-<月>月課表.html")
 _p.add_argument("--byline", default="Lulu 製作", help="署名（中文）")
 _p.add_argument("--byline-en", default="Made by Lulu", help="署名（英文）")
+# LIFF ID：本站是純靜態課表、不讀會員資料，沒填也照樣能看，只是不初始化 LINE SDK
+_p.add_argument("--liff-id", default=os.environ.get("LIFF_ID", ""),
+                help="LINE LIFF ID（預設讀環境變數 LIFF_ID）")
 _a = _p.parse_args()
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -598,15 +601,17 @@ STYLES = "\n".join([
     ":root{--gy:%.0fpx;--gut:%dpx;--sheetw:%dpx}" % (GH, GUT, SHEET_W),
 ])
 SCRIPTS = "\n".join([
-    "// 由 build.py 依這份課表產生（08-export.js 讀 window.SCHEDULE）",
+    "// 由 build.py 依這份課表產生（08-export.js 讀 window.SCHEDULE，09-liff.js 讀 window.LIFF_ID）",
     'window.SCHEDULE = {png: {zh: "%s", en: "%s"}};' % (
         "%s-%d月課表.png" % (BRANCH, MONTH),
         "%s-%s-schedule.png" % (EN_BRANCH.replace(" ", "-"), EN_MONTH[MONTH - 1])),
+    'window.LIFF_ID = "%s";' % _a.liff_id.replace('"', ""),
     bundle("js", skip=("01-boot.js",)),
 ])
 FILL = {
     "title": "%d月課表 %s" % (MONTH, BRANCH),
-    "sheet_width": str(SHEET_W),
+    "og_desc": html.escape("%s %d月課表，共 %d 堂課；可切換寬版格線與單日清單。"
+                           % (BRANCH, MONTH, sum(len(d) for d in S))),
     "styles": STYLES,
     "boot": asset("js", "01-boot.js").rstrip("\n"),
     "content": "\n".join(o),
