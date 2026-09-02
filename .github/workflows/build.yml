@@ -82,8 +82,12 @@ jobs:
           name: schedule-html
           path: dist
 
-      # enablement: true 會在 repo 還沒開 Pages 時自己開起來並設成 GitHub Actions 來源，
-      # 少了它第一次跑會死在 "Get Pages site failed ... Not Found"
+      # Pages 必須先在 repo 上啟用一次，否則這步會死在
+      #   Get Pages site failed ... Not Found
+      # 啟用方式：Settings → Pages → Source 選 GitHub Actions，或
+      #   gh api -X POST repos/<owner>/<repo>/pages -f build_type=workflow
+      # enablement: true 只是保險 — 站已存在時它單純讀設定；真的要建站會被
+      # GITHUB_TOKEN 拒絕（Resource not accessible by integration），不能只靠它
       - uses: actions/configure-pages@v5
         with:
           enablement: true
