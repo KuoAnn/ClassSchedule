@@ -1,7 +1,9 @@
-// 04-narrow.js — 窄版輪播：無限循環、當日置中、小時列對齊、釘住的星期
+// 04-narrow.js — 窄版輪播：無限循環、當日置中、小時列對齊、釘住的整排星期
 var track = document.getElementById('ntrack'), cur = 0;
 var navp = document.getElementById('navp'), navn = document.getElementById('navn');
 var NDAYS = track.children.length, vpos = NDAYS;
+// dock 的參照要在複製面板之前就取得：下面那段 IIFE 會馬上 buildDock()
+var ndock = document.getElementById('ndock'), ndockin = document.getElementById('ndockin');
 // 前後各複製一整組，捲進複製區後靜默歸位 → 循環沒有跳點
 (function(){
   var real = Array.prototype.slice.call(track.children);
@@ -18,6 +20,7 @@ var NDAYS = track.children.length, vpos = NDAYS;
     track.appendChild(c);
   });
   markPast();
+  buildDock();
 })();
 function px(name, fb){
   var v = parseFloat(getComputedStyle(track).getPropertyValue(name));
@@ -26,6 +29,10 @@ function px(name, fb){
 function panelStep(){
   var a = track.children[0], b = track.children[1];
   return b ? b.offsetLeft - a.offsetLeft : px('--dayw', 320) + px('--gap', 12);
+}
+function setFade(car, f){
+  car.style.setProperty('--fadeL', f + 'px');
+  car.style.setProperty('--fadeR', f + 'px');
 }
 function layout(){
   if (!document.documentElement.classList.contains('nv')) return;
@@ -40,8 +47,7 @@ function layout(){
   if (full) {
     track.style.paddingLeft = track.style.paddingRight = '0px';
     track.scrollLeft = 0;
-    car.style.setProperty('--fadeL', '0px');
-    car.style.setProperty('--fadeR', '0px');
+    setFade(car, 0);
     return;
   }
   // 當天置中：左右各留 (可視寬 − 單日寬)/2，兩端的日子也能捲到正中
@@ -51,34 +57,44 @@ function layout(){
   var m = Math.floor(side / step);
   var sliver = Math.max(0, side - m * step - gap);
   var f = sliver > 3 ? Math.min(Math.max(sliver, 18), 130) : 0;
-  car.style.setProperty('--fadeL', f + 'px');
-  car.style.setProperty('--fadeR', f + 'px');
+  setFade(car, f);
   var r = car.getBoundingClientRect();
   navp.style.left = '23px';
   navn.style.left = (window.innerWidth - 23) + 'px';
 }
 window.addEventListener('resize', function(){ measureDock(); syncRows(); layout(); goDay(cur + NDAYS, false); updateDock(); });
 // 各日的同一小時列取最大高度，讓七天橫向對齊；空班自然留白
-var ndock = document.getElementById('ndock');
 function measureDock(){
   var t = document.querySelector('.top');
   var h = Math.round(t.getBoundingClientRect().height);
   document.documentElement.style.setProperty('--dockH', h + 'px');
 }
-// 把 dock 的星期換成第 k 片面板（k 是軌道上的實際索引）
-function setDockDay(k){
-  var panel = track.children[k];
-  if (!panel) return;
-  var hd = panel.querySelector('.dhd');
-  if (hd && ndock.dataset.k !== String(k)) {
-    ndock.innerHTML = hd.innerHTML;
-    ndock.dataset.k = String(k);
+// dock 一次列出七天：星期字樣直接抄面板標頭（中英雙語都在裡面，語言切換照舊靠 CSS）
+function buildDock(){
+  var f = document.createDocumentFragment();
+  for (var i = NDAYS; i < NDAYS * 2; i++) {
+    var panel = track.children[i];
+    var dk = document.createElement('span');
+    dk.className = 'dk' + (panel.classList.contains('today') ? ' today' : '');
+    dk.innerHTML = panel.querySelector('.dday').innerHTML;
+    var tdy = dk.querySelector('.tdy');
+    if (tdy) tdy.remove();
+    f.appendChild(dk);
   }
-  ndock.classList.toggle('istoday', panel.classList.contains('today'));
+  ndockin.textContent = '';
+  ndockin.appendChild(f);
+}
+// 捲到哪天就打亮哪天（吃即時的 scrollLeft，慣性滑動途中也會跟著換）
+function syncDock(){
+  var k = track.classList.contains('full') ? cur
+    : ((Math.round(track.scrollLeft / panelStep()) - NDAYS) % NDAYS + NDAYS) % NDAYS;
+  Array.prototype.forEach.call(ndockin.children, function(el, i){
+    el.classList.toggle('on', i === k);
+  });
 }
 function updateDock(){
   if (!document.documentElement.classList.contains('nv')) return;
-  setDockDay(vpos);
+  syncDock();
   var dockH = parseFloat(getComputedStyle(document.documentElement)
     .getPropertyValue('--dockH')) || 92;
   // 只有面板內的標頭「整個」捲進固定列底下之後才接手，否則會同時出現兩個星期
@@ -97,7 +113,7 @@ track.addEventListener('scroll', function(){
   swipeRaf = requestAnimationFrame(function(){
     swipeRaf = 0;
     if (track.classList.contains('full')) return;
-    setDockDay(Math.round(track.scrollLeft / panelStep()));
+    syncDock();
   });
 }, {passive: true});
 var dockRaf = 0;

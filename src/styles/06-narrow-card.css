@@ -7,15 +7,15 @@ display:flex;align-items:center;justify-content:center;padding:0}
 .nav:hover{background:#fff;color:var(--ink)}
 html.wv .nav{display:none}
 .dgrp{flex:0 0 var(--dayw);scroll-snap-align:center;margin-bottom:2px}
-.dhd,.ndock{display:flex;align-items:baseline;justify-content:center;
-font-size:27px;font-weight:700;letter-spacing:.14em;
+.dhd{display:flex;align-items:baseline;justify-content:center;
+font-size:21px;font-weight:700;letter-spacing:.14em;
 padding-top:2px;padding-bottom:8px;border-bottom:2px solid var(--lane);
 background:var(--page)}
 .ndock:not(.show){display:none}
 .dday{position:relative;white-space:nowrap}
-.dhd .tdy,.ndock .tdy{display:none;position:absolute;left:100%;top:50%;
+.dhd .tdy{display:none;position:absolute;left:100%;top:50%;
 transform:translateY(-50%);margin-left:11px;font-style:normal}
-.dgrp.today .tdy,.ndock.istoday .tdy{display:inline-block}
+.dgrp.today .tdy,.dhd.today .tdy{display:inline-block}
 .lc{border:1px solid;border-left-width:3px;border-radius:8px;padding:9px 11px;margin-bottom:5px}
 .lc .nr{display:flex;align-items:flex-start;gap:8px}
 .lc .n{flex:1;min-width:0;font-size:16px;font-weight:500;line-height:1.25}

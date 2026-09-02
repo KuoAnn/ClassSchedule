@@ -12,7 +12,7 @@ background:#efeae2;border-radius:4px;padding:1px 6px;margin-left:9px;vertical-al
 .dn.today .tdy{display:inline-block}
 .dn.today{background:#e8e0cf}
 .col.today{background:rgba(196,156,64,.075)}
-.dgrp.today .dhd,.ndock.istoday{border-bottom-color:#a89670}
+.dgrp.today .dhd,.dhd.today{border-bottom-color:#a89670}
 
 .body{display:flex}
 .gut{width:var(--gut);position:sticky;left:0;height:var(--gy);z-index:20;
