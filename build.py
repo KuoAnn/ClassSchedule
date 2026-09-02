@@ -390,7 +390,7 @@ a('<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;40
 a("""<style>
 :root{--page:#F4F0E9;--ink:#33302b;--ink2:#635d55;--ink3:#6e675d;
 --rule:#e3dcd1;--rule2:#cdc3b4;--lane:#c3b6a1;--band1:#fdfcfa;--band2:#f8f3eb;--band3:#f0e9de;
---gy:__GH__px;--gut:__GUT__px}
+--gy:__GH__px;--gut:__GUT__px;--dayw:320px;--gap:12px;--peek:26px}
 *{box-sizing:border-box;margin:0;padding:0}
 .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;
 overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
@@ -420,17 +420,13 @@ margin:9px -14px 0 0;padding:1px 14px 3px 0}
 html.nv .keys::-webkit-scrollbar{display:none}
 
 .nlist{margin:2px -14px 0 0;display:flex;align-items:flex-start}
+/* 釘在上方的星期：與面板內的標頭完全同樣式，看起來就是同一個標頭停住 */
 .ndock{display:none;position:sticky;top:var(--dockH,92px);z-index:24;
-background:var(--page);padding:6px 0 8px;border-bottom:2px solid var(--lane);
-align-items:baseline;justify-content:center;gap:11px;font-size:27px;font-weight:700;
-letter-spacing:.14em;padding-left:48px;margin-right:-14px}
+padding-left:48px;margin-right:-14px;border-bottom:0}
+.ndock .dday::after{content:"";position:absolute;left:50%;transform:translateX(-50%);
+bottom:-8px;width:var(--dayw);border-bottom:2px solid var(--lane)}
+.ndock.istoday .dday::after{border-bottom-color:#a89670}
 .ndock.show{display:flex}
-.ndock span{font-size:13px;font-weight:400;letter-spacing:.04em;color:var(--ink3)}
-.ndock .tdy{display:none}
-.ndock .dday{position:relative;white-space:nowrap}
-.ndock .tdy{position:absolute;left:100%;top:50%;transform:translateY(-50%);
-margin-left:11px;font-style:normal}
-.ndock.istoday .tdy{display:inline-block}
 .ngut{flex:0 0 48px;position:relative;z-index:3;background:var(--page)}
 .ngc{border-top:1px solid var(--rule);padding-top:5px;font-size:12.5px;color:var(--ink3);
 font-variant-numeric:tabular-nums;box-sizing:border-box;overflow:hidden}
@@ -445,8 +441,7 @@ pointer-events:none;z-index:2}
 .ncar::before{left:0;width:var(--fadeL,0px);background:linear-gradient(to right,var(--page) 14%,rgba(244,240,233,0))}
 .ncar::after{right:0;width:var(--fadeR,0px);background:linear-gradient(to left,var(--page) 14%,rgba(244,240,233,0))}
 .hrow{border-top:1px solid var(--rule);padding-top:5px;box-sizing:border-box;overflow:hidden}
-.ntrack{--dayw:320px;--gap:12px;--peek:26px;
-display:flex;align-items:flex-start;gap:var(--gap);
+.ntrack{display:flex;align-items:flex-start;gap:var(--gap);
 overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
 -webkit-overflow-scrolling:touch;cursor:grab}
 .ntrack::-webkit-scrollbar{display:none}
@@ -479,10 +474,14 @@ display:flex;align-items:center;justify-content:center;padding:0}
 .nav:hover{background:#fff;color:var(--ink)}
 html.wv .nav{display:none}
 .dgrp{flex:0 0 var(--dayw);scroll-snap-align:center;margin-bottom:2px}
-.dhd{display:flex;align-items:baseline;gap:11px;font-size:27px;font-weight:700;
-letter-spacing:.14em;padding:2px 2px 8px;border-bottom:2px solid var(--lane);
+.dhd,.ndock{display:flex;align-items:baseline;justify-content:center;
+font-size:27px;font-weight:700;letter-spacing:.14em;
+padding-top:2px;padding-bottom:8px;border-bottom:2px solid var(--lane);
 background:var(--page)}
-.dhd span{font-size:13px;font-weight:400;letter-spacing:.04em;color:var(--ink3)}
+.dday{position:relative;white-space:nowrap}
+.dhd .tdy,.ndock .tdy{display:none;position:absolute;left:100%;top:50%;
+transform:translateY(-50%);margin-left:11px;font-style:normal}
+.dgrp.today .tdy,.ndock.istoday .tdy{display:inline-block}
 .lc{border:1px solid;border-left-width:3px;border-radius:8px;padding:9px 11px;margin-bottom:5px}
 .lc .nr{display:flex;align-items:flex-start;gap:8px}
 .lc .n{flex:1;min-width:0;font-size:16px;font-weight:500;line-height:1.25}
@@ -570,10 +569,10 @@ border-bottom:1px solid var(--rule2)}
 .dn.we{background:#ece5d9}
 .tdy{display:none;font-size:11px;font-weight:400;letter-spacing:.08em;color:#7f643a;
 background:#efeae2;border-radius:4px;padding:1px 6px;margin-left:9px;vertical-align:2px}
-.today .tdy{display:inline-block}
+.dn.today .tdy{display:inline-block}
 .dn.today{background:#e8e0cf}
 .col.today{background:rgba(196,156,64,.075)}
-.dgrp.today .dhd{border-bottom-color:#a89670}
+.dgrp.today .dhd,.ndock.istoday{border-bottom-color:#a89670}
 
 .body{display:flex}
 .gut{width:var(--gut);position:sticky;left:0;height:var(--gy);z-index:20;
@@ -888,8 +887,8 @@ for h in HOURS:
 a('</div>')
 a('<div class="ncar"><div class="ntrack" id="ntrack">')
 for di, day in enumerate(S):
-    a('<section class="dgrp" data-day="%d"><h3 class="dhd">%s'
-      '<span class="tdy">%s</span></h3>'
+    a('<section class="dgrp" data-day="%d"><h3 class="dhd">'
+      '<span class="dday">%s<i class="tdy">%s</i></span></h3>'
       % (di, bi(DAYNAME[di], EN_DAY[di]), bi("今天", "Today")))
     for h in HOURS:
         g = sorted([x for x in day if mn(x["s"]) // 60 == h], key=lambda x: mn(x["s"]))
@@ -1046,10 +1045,7 @@ function setDockDay(k){
   if (!panel) return;
   var hd = panel.querySelector('.dhd');
   if (hd && ndock.dataset.k !== String(k)) {
-    var cl = hd.cloneNode(true), tdy = cl.querySelector('.tdy');
-    if (tdy) tdy.remove();
-    ndock.innerHTML = '<span class="dday">' + cl.innerHTML +
-      (tdy ? '<i class="tdy">' + tdy.innerHTML + '</i>' : '') + '</span>';
+    ndock.innerHTML = hd.innerHTML;
     ndock.dataset.k = String(k);
   }
   ndock.classList.toggle('istoday', panel.classList.contains('today'));

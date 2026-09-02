@@ -222,8 +222,18 @@ FAKE_CLOCK=1 python3 checks/wcag.py   # 固定時間驗證「今天／已開始�
 - 七天全放得下時（≥ 2312px）自動關閉輪播互動：隱藏按鈕、關閉吸附與拖曳、
   隱藏淡出、七天水平居中、隱藏複製面板
 - 星期 27px / weight 700，是全頁最大的字
-- 捲過面板標頭後浮現 dock 條顯示當前日（輪播容器有 `overflow-x:auto`，
-  瀏覽器會把 `overflow-y` 也算成 auto，導致 sticky 失效，所以不能直接對標頭用 sticky）
+- **星期標頭往下捲時要固定在上方，但不能看起來像另外浮出一條 bar**。
+  輪播容器有 `overflow-x:auto`，瀏覽器會把 `overflow-y` 也算成 auto，
+  導致直接對面板內的標頭用 `position:sticky` 無效（參考容器變成軌道本身）。
+  所以另做一個 `.ndock` 由 JS 控制顯示，但**樣式與面板內的標頭共用同一組規則**
+  （`.dhd,.ndock{...}`：27px/700、置中、2px 底線、同樣的內距與底色），
+  釘住時看起來就是同一個標頭停在原位。實測兩者字級、字重、高度、
+  文字中心 x、底線顏色完全一致
+  - 底線寬度也要一致：`.ndock` 本身不畫底線，改用 `.dday::after` 畫一條
+    寬度等於 `--dayw` 的線並置中，否則會是整個視窗寬的長線而非單日寬
+    （因此 `--dayw` 等變數要放在 `:root`，不能只放在 `.ntrack`）
+  - 面板標頭與 dock 的內容結構必須相同（`<span class="dday">星期<i class="tdy">今天</i></span>`），
+    這樣 `setDockDay` 只要直接複製 innerHTML
   - dock 的星期必須在**滑動過程中即時跟隨**，不能等吸附結束。
     軌道的 `scroll` 事件用 rAF 節流直接算 `round(scrollLeft / step)` 換標題；
     吸附結束後的 110ms debounce 只負責 `normalize()` 與 `markCur()`。
