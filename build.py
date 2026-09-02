@@ -684,7 +684,7 @@ font-size:13px;color:var(--ink2);padding:5px 14px;border-radius:16px;cursor:poin
 letter-spacing:.06em;margin-left:4px}
 .clear:hover{background:#faf7f1}
 .keys.on .clear{display:inline-block}
-/* 結束：整張卡淡化（此處刻意不套 WCAG 對比要求，見 AI_INSTRUCTIONS §14） */
+/* 結束：整張卡淡化（此處刻意不套 WCAG 對比要求，詳見 AGENTS.md 規格） */
 .ev.st-done,.lc.st-done{filter:opacity(.4)}
 /* 狀態標籤與難度標籤共用右上角，尺寸一致；有狀態時難度不顯示 */
 .stt{flex:0 0 auto;font-style:normal;font-weight:500;font-size:10.5px;line-height:1.25;

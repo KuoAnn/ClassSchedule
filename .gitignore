@@ -1,6 +1,5 @@
 __pycache__/
 *.pyc
-dist/*.html
-dist/*.png
+dist
 .DS_Store
 .venv/

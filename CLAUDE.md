@@ -1,10 +1,8 @@
-# 給 Claude 的指示
+# Claude 入口
 
-本專案的完整規格在 **[AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md)**，動手前請完整讀完。
+這個檔案僅作轉址用途。
 
-重點提醒：
+本專案的實際規格由 **[AGENTS.md](AGENTS.md)** 管理，
+Claude 接手前請先讀 **[AGENTS.md](AGENTS.md)**，再動任何一行程式。
 
-1. 只改 `build.py`，不要改 `dist/` 裡的 HTML（那是產物）
-2. 改完必跑：`python3 build.py` 然後 `./run.sh` 的四項檢查，**全部必須是 0**
-3. 不要為了讓檢查通過而放寬標準
-4. 新增規格時，把「為什麼」一起寫進 AI_INSTRUCTIONS.md
+> `AI_INSTRUCTIONS.md` 已退役，不再作為主要依據。

@@ -60,14 +60,14 @@ FAKE_CLOCK=1 python3 checks/wcag.py
 
 通過 WCAG 2.2 AA：對比度、鍵盤操作、焦點可見、觸控目標 ≥ 24px、
 語言標記、ARIA 狀態、篩選結果朗讀、`prefers-reduced-motion`。
-細節與理由見 `AI_INSTRUCTIONS.md` 第 14 節。
+詳細規格與理由見 [AGENTS.md](AGENTS.md)。
 
 ## 專案結構
 
 ```
 build.py              產生器（唯一要改的地方）
-AI_INSTRUCTIONS.md    完整規格 — AI 接手前必讀
-CLAUDE.md             指向 AI_INSTRUCTIONS.md
+AGENTS.md             主要規格來源（AI 接手前必讀）
+CLAUDE.md             Claude 轉址入口
 data/                 課程 CSV 與空白範本
 checks/               三支驗證腳本
 dist/                 產出的 HTML（git 不追蹤內容）
@@ -75,7 +75,8 @@ dist/                 產出的 HTML（git 不追蹤內容）
 
 ## 給 AI 助理
 
-**改任何東西之前請先讀 [`AI_INSTRUCTIONS.md`](AI_INSTRUCTIONS.md)。**
+**改任何東西之前請先讀 [`AGENTS.md`](AGENTS.md)。**
+`CLAUDE.md` 只是轉址入口，不再有單獨的規格來源。
 裡面每一條規格都有原因，包含踩過的坑（語言切換的選擇器陷阱、
 sticky 在 html2canvas 下的定位問題、難度標籤壓到時間的成因等）。
 
