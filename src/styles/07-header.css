@@ -6,6 +6,9 @@
 .hd{padding-bottom:12px}
 .hd h1{font-size:34px;font-weight:500;letter-spacing:.06em;line-height:1.1}
 .hd .by{font-size:13px;color:var(--ink3);letter-spacing:.14em;margin-top:7px}
+/* 課表版本：當月第一版（1.0）build.py 不會印出來，1.1 起才有這顆 */
+.hd .by .ver{font-size:11px;letter-spacing:.06em;color:var(--ink3);
+margin-left:9px;font-variant-numeric:tabular-nums;opacity:.85}
 .hd h1 em{font-style:normal;font-size:17px;font-weight:400;color:var(--ink3);letter-spacing:.12em;margin-left:18px}
 
 .top{position:fixed;top:0;left:0;right:0;z-index:30;background:var(--page);

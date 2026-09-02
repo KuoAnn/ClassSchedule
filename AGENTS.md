@@ -100,6 +100,26 @@ dist/                 產物
 `LIFF_ID` 由 `build.py --liff-id`（或環境變數 `LIFF_ID`，CI 走 repo Variable）帶入，
 產生 `window.LIFF_ID`；沒設也不會壞，只是不初始化 SDK。設定步驟見 README。
 
+## 課表版本：只跟 CSV 一起跑
+
+課表會在月中改（代課、暫停），改過就要重新貼進 LINE，所以圖上要有版本號讓人分辨新舊。
+規則：**一個月從 1.0 開始跑，1.0 不印出來**（當月第一版不需要標「第一版」），
+1.1 起才在署名旁邊以小字顯示 `v1.1`。
+
+版本代表「這份課表改到第幾版」，不是站台版本，所以 `resolve_version()`（`scripts/build.py`）
+**只看 CSV 內容**：改版面、改樣式、重新產檔都不該讓版本跳號。編號記在 `data/versions.json`，
+一個月一筆（key 是 `<館別>-<年>-<月>`），值是這個月依序出現過的 CSV 指紋，
+指紋在陣列裡的序號就是小版號。
+
+- 指紋算之前會把 CRLF 與尾端空白正規化 —— 編輯器換個存檔格式不該算改版。
+- 沒見過的指紋會 append 並寫回 json。**這個 json 要跟著 commit**：
+  CI 端只要 json 是最新的，算出來就跟本機一致；寫不進去（唯讀環境）也不會壞，
+  版本仍然算得出來，只是下一次沒有紀錄可對。
+- 要手動指定用 `--version 1.3`（`--version 1.0` 一樣不顯示）。
+- 署名 `.by` 在 `@media (max-width:560px)` 是隱藏的，但匯出的圖不該少版本號，
+  所以 `05-export-mode.css` 用 `.sheet.flat .hd .by{display:block}` 蓋回來
+  （media query 不加權重，選擇器帶 `.sheet.flat` 就贏）。
+
 ## 匯出圖片：直式要留住時間軸
 
 畫面上的窄版讓七天逐時對齊（`syncRows()`＋左側 `.ngut` 時間欄），

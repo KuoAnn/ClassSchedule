@@ -4,6 +4,9 @@
 .sheet.flat .hcorner{position:static}
 .sheet.flat .gut{position:relative}
 .sheet.flat .ndock{display:none}
+/* 署名與課表版本在窄視窗會被 07-header.css 的 @media 收掉，但匯出的圖不該少這行 —
+   手機上匯出時視窗就是 <560px。選擇器帶 .sheet.flat 才蓋得過去（media query 不加權重） */
+.sheet.flat .hd .by{display:block}
 .sheet.weekexp{width:max-content}
 .sheet.weekexp .nlist,.sheet.weekexp .ncar{width:max-content}
 .sheet.weekexp .ntrack{overflow:visible;padding:0!important;justify-content:flex-start;width:max-content}

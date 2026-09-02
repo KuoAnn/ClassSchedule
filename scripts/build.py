@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import csv, html, re, colorsys, sys
+import csv, html, re, colorsys, sys, json, hashlib
 
 import argparse, os, glob
 from urllib.parse import quote
@@ -11,6 +11,8 @@ _p.add_argument("--branch", help="館別，預設由檔名推斷")
 _p.add_argument("--out", help="輸出 HTML 路徑，預設 dist/<館別>-<月>月課表.html")
 _p.add_argument("--byline", default="Lulu 製作", help="署名（中文）")
 _p.add_argument("--byline-en", default="Made by Lulu", help="署名（英文）")
+# 課表版本：預設由 data/versions.json 自己跑（見下方 resolve_version），這裡只留手動覆寫
+_p.add_argument("--version", help="課表版本，例如 1.2；預設依 CSV 內容自動編號")
 # LIFF ID：本站是純靜態課表、不讀會員資料，沒填也照樣能看，只是不初始化 LINE SDK
 _p.add_argument("--liff-id", default=os.environ.get("LIFF_ID", ""),
                 help="LINE LIFF ID（預設讀環境變數 LIFF_ID）")
@@ -24,6 +26,8 @@ _m = re.search(r"(\d{1,2})\s*月", _stem)
 MONTH = _a.month or (int(_m.group(1)) if _m else 1)
 _b = re.match(r"([^\d]+館)", _stem)
 BRANCH = _a.branch or (_b.group(1) if _b else "本館")
+_y = re.search(r"(\d{2,4})\s*年", _stem)
+YEAR = _y.group(1) if _y else ""
 OUT = _a.out or os.path.join(_ROOT, "dist", "%s-%02d月課表.html" % (BRANCH, MONTH))
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 
@@ -137,6 +141,51 @@ EN_BRANCH = "Guting Studio"
 VIEW_ICON = {"w": icon("view-grid"), "n": icon("view-list")}
 
 BYLINE = (_a.byline, _a.byline_en)
+
+# ---------- 課表版本：同一個月改一次 CSV 就往上跑一號 ----------
+# 版本代表「這份課表改到第幾版」，不是站台版本，所以只看 CSV 內容 —— 改版面、
+# 改樣式重新產檔都不該讓版本跳號。編號記在 data/versions.json：一個月一筆，
+# 值是這個月依序出現過的 CSV 指紋，指紋的序號就是小版號（第一版 = 1.0）。
+# 這樣即使 CI 端沒有寫入權限，只要 json 有跟著 commit，算出來的版本就一致。
+_VERFILE = os.path.join(_ROOT, "data", "versions.json")
+
+
+def _csv_digest(path):
+    """CSV 內容指紋：換行形式與尾端空白不算改版，避免編輯器存檔就跳號"""
+    with open(path, encoding="utf-8-sig") as f:
+        rows = [ln.rstrip() for ln in f.read().replace("\r\n", "\n").split("\n")]
+    while rows and not rows[-1]:
+        rows.pop()
+    return hashlib.sha256("\n".join(rows).encode("utf-8")).hexdigest()
+
+
+def resolve_version():
+    """回傳 (版本字串, 要不要顯示)；當月第一版是 1.0，不顯示，1.1 起才印出來"""
+    if _a.version:
+        v = _a.version.strip().lstrip("vV")
+        return v, v != "1.0"
+    key = "%s-%s%02d" % (BRANCH, YEAR + "-" if YEAR else "", MONTH)
+    try:
+        with open(_VERFILE, encoding="utf-8") as f:
+            book = json.load(f)
+    except (OSError, ValueError):
+        book = {}
+    seen = book.get(key) or []
+    dg = _csv_digest(SRC)
+    if dg not in seen:
+        seen.append(dg)
+        book[key] = seen
+        try:
+            with open(_VERFILE, "w", encoding="utf-8", newline="\n") as f:
+                json.dump(book, f, ensure_ascii=False, indent=2, sort_keys=True)
+                f.write("\n")
+        except OSError:
+            pass  # 唯讀環境（CI）寫不進去也沒關係，版本仍算得出來
+    n = seen.index(dg)
+    return "1.%d" % n, n > 0
+
+
+VERSION, SHOW_VERSION = resolve_version()
 EN_DAY = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 ICON = {"早": icon("band-am"), "午": icon("band-mid"), "晚": icon("band-pm")}
 
@@ -398,9 +447,10 @@ o = []
 a = o.append
 
 a('<div class="top"><div class="trow">')
-a('<div class="hd"><h1>%s<em>%s</em></h1><div class="by">%s</div></div>' % (
+a('<div class="hd"><h1>%s<em>%s</em></h1><div class="by">%s%s</div></div>' % (
     bi("%d月課表" % MONTH, "%s Schedule" % EN_MONTH[MONTH - 1]),
-    bi(BRANCH, EN_BRANCH), bi(esc(BYLINE[0]), esc(BYLINE[1]))))
+    bi(BRANCH, EN_BRANCH), bi(esc(BYLINE[0]), esc(BYLINE[1])),
+    ('<span class="ver">v%s</span>' % esc(VERSION)) if SHOW_VERSION else ''))
 a('<div class="tools" data-noexport="1">'
   '<div class="seg" id="view" role="group" aria-label="版型 / Layout">'
   '<button data-v="w" aria-pressed="true" aria-label="寬版格線 / Grid view" title="寬版">' + VIEW_ICON["w"] + '</button>'
