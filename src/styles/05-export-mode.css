@@ -21,15 +21,12 @@
 .sheet.noto .col.today{background:transparent}
 .sheet.noto .tdy{display:none}
 .sheet.noto .dgrp.today .dhd{border-bottom-color:var(--lane)}
-/* npack — 直式匯出：把螢幕上收掉的時間軸與逐時對齊裝回來。
+/* npack — 直式匯出：保留左側時間軸，並維持「同一小時跨日對齊」。
    時間欄是七天共用的一欄，一旦某天自己往上收，標籤就會指到別的時段的卡片（錯的資訊），
    所以對齊不能拿掉；空堂的留白改用壓縮卡片來省 —— 直式匯出是拿來看整週的，
    卡片裡的行距與內距在螢幕上是為了好點擊，印成圖只是白費高度。
    卡片變矮之後 syncRows() 寫在 .hrow／.ngc 上的 inline 高度就過大了，
    所以 08-export.js 掛上 npack 之後會再算一次（還原時也要再算回來） */
-.sheet.npack .ngut{display:block}
-.sheet.npack .hrow.empty{display:block}
-.sheet.npack .hrow{border-top:1px solid var(--rule)}
 .sheet.npack .lc{padding:5px 8px;margin-bottom:4px;border-radius:6px}
 .sheet.npack .lc .nr{gap:6px}
 .sheet.npack .lc .n{line-height:1.18}

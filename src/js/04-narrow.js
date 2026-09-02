@@ -172,23 +172,16 @@ function syncRows(){
   var gut = document.getElementById('ngut');
   var head = gut.querySelector('.ngc.head');
   var hs = [], hd = 0;
-  // 各日的標頭仍要等高：它們是並排的，不齊的話第一張卡會從不同高度開始
   var heads = track.querySelectorAll('.dgrp > .dhd');
   Array.prototype.forEach.call(heads, function(el){
     el.style.height = 'auto';
     hd = Math.max(hd, el.getBoundingClientRect().height);
   });
   Array.prototype.forEach.call(heads, function(el){ el.style.height = hd + 'px'; });
+  Array.prototype.forEach.call(gut.querySelectorAll('.ngc[data-h]'), function(g){
+    hs.push(g.dataset.h);
+  });
   head.style.height = hd + 'px';
-  var cells = gut.querySelectorAll('.ngc[data-h]');
-  // 逐時對齊只在匯出的直式圖片上做：螢幕上是緊密排列（空班收掉、各日各自往上排），
-  // 沒有跨日對齊可言，留著 inline 高度只會把收掉的空白又撐回來
-  if (!document.getElementById('sheet').classList.contains('npack')) {
-    Array.prototype.forEach.call(track.querySelectorAll('.hrow'), function(r){ r.style.height = ''; });
-    Array.prototype.forEach.call(cells, function(g){ g.style.height = ''; });
-    return;
-  }
-  Array.prototype.forEach.call(cells, function(g){ hs.push(g.dataset.h); });
   hs.forEach(function(h){
     var rows = track.querySelectorAll('.hrow[data-h="' + h + '"]');
     var g = gut.querySelector('.ngc[data-h="' + h + '"]');

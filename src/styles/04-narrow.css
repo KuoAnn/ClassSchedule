@@ -10,6 +10,7 @@
 .ndock{display:none;position:sticky;top:var(--dockH,92px);z-index:24;
 margin-right:-14px;background:var(--page);border-bottom:1px solid var(--rule)}
 .ndock.show{display:flex}
+.ndockgut{flex:0 0 var(--ngut)}
 .ndockclip{flex:1;min-width:0;overflow:hidden}
 .ndockin{display:flex;align-items:stretch;gap:var(--gap)}
 .ndockin .dk{flex:0 0 var(--dayw);min-width:0;text-align:center;white-space:nowrap;
@@ -19,15 +20,7 @@ color:var(--ink3);border-bottom:2px solid transparent;margin-bottom:-1px}
 .ndockin .dk.on{color:var(--ink);font-weight:700;border-bottom-color:var(--lane)}
 .ndockin .dk.on.today{border-bottom-color:#a89670}
 .ntrack.pinned .dhd{visibility:hidden}
-/* 螢幕上的窄版是「一天一串」：空班整列收掉、各日的卡片各自往上排。
-   一旦不再逐時對齊，左邊那條七天共用的時間欄就對不上任何一張卡（會標錯時段），
-   所以連它一起收掉 —— 每張卡自己都印著時段，資訊沒有少，少的只有早／午／晚的分段圖示。
-   同理 .hrow 的 border-top 也拿掉：它代表「換一個小時」，緊密排列後那條線沒有意義。
-   時間欄只在匯出的直式圖片上回來（.sheet.npack，見 05-export-mode.css）：
-   那是一張拿來比整週的海報，逐時對齊才有價值，也才有東西可以對齊。 */
-.hrow.empty{display:none}
-.ngut{display:none;flex:0 0 var(--ngut);position:relative;z-index:3;background:var(--page)}
-.ndockgut{display:none;flex:0 0 var(--ngut)}
+.ngut{flex:0 0 var(--ngut);position:relative;z-index:3;background:var(--page)}
 .ngc{border-top:1px solid var(--rule);padding-top:5px;font-size:12.5px;color:var(--ink3);
 font-variant-numeric:tabular-nums;box-sizing:border-box;overflow:hidden}
 .ngc.head{border-top:0}
@@ -40,7 +33,7 @@ letter-spacing:.08em;margin-bottom:1px}
 pointer-events:none;z-index:2}
 .ncar::before{left:0;width:var(--fadeL,0px);background:linear-gradient(to right,var(--page) 14%,rgba(244,240,233,0))}
 .ncar::after{right:0;width:var(--fadeR,0px);background:linear-gradient(to left,var(--page) 14%,rgba(244,240,233,0))}
-.hrow{box-sizing:border-box;overflow:hidden}
+.hrow{border-top:1px solid var(--rule);padding-top:5px;box-sizing:border-box;overflow:hidden}
 /* overscroll-behavior-x:contain — 輪播滑到頭時不要把手勢傳給外層，
    在 LINE 內建瀏覽器裡那會變成「往回上一頁／關掉 LIFF」 */
 .ntrack{display:flex;align-items:flex-start;gap:var(--gap);
