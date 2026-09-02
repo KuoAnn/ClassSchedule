@@ -992,21 +992,35 @@ function measureDock(){
   document.documentElement.style.setProperty('--dockH',
     Math.round(t.getBoundingClientRect().height) + 'px');
 }
-function updateDock(){
-  if (!document.documentElement.classList.contains('nv')) return;
-  var panel = track.children[vpos];
+// 把 dock 的星期換成第 k 片面板（k 是軌道上的實際索引）
+function setDockDay(k){
+  var panel = track.children[k];
   if (!panel) return;
   var hd = panel.querySelector('.dhd');
-  if (hd && ndock.dataset.k !== String(vpos)) {
+  if (hd && ndock.dataset.k !== String(k)) {
     ndock.innerHTML = hd.innerHTML;
-    ndock.dataset.k = String(vpos);
+    ndock.dataset.k = String(k);
   }
   ndock.classList.toggle('istoday', panel.classList.contains('today'));
+}
+function updateDock(){
+  if (!document.documentElement.classList.contains('nv')) return;
+  setDockDay(vpos);
   var dockH = parseFloat(getComputedStyle(document.documentElement)
     .getPropertyValue('--dockH')) || 92;
   var top = document.querySelector('.nlist').getBoundingClientRect().top;
   ndock.classList.toggle('show', top < dockH - 2 && !track.classList.contains('full'));
 }
+// 橫向捲動時即時跟隨（不等吸附結束），否則手機慣性滑動期間星期會停在舊的那天
+var swipeRaf = 0;
+track.addEventListener('scroll', function(){
+  if (swipeRaf) return;
+  swipeRaf = requestAnimationFrame(function(){
+    swipeRaf = 0;
+    if (track.classList.contains('full')) return;
+    setDockDay(Math.round(track.scrollLeft / panelStep()));
+  });
+}, {passive: true});
 var dockRaf = 0;
 window.addEventListener('scroll', function(){
   if (dockRaf) return;
@@ -1074,7 +1088,7 @@ track.addEventListener('scroll', function(){
     markCur();
     normalize();
     updateDock();
-  }, 140);
+  }, 110);
 });
 (function(){
   var down = false, x0 = 0, s0 = 0, moved = 0;

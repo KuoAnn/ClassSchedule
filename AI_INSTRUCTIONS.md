@@ -203,6 +203,13 @@ FAKE_CLOCK=1 python3 checks/wcag.py   # 固定時間驗證「今天／已開始�
 - 星期 27px / weight 700，是全頁最大的字
 - 捲過面板標頭後浮現 dock 條顯示當前日（輪播容器有 `overflow-x:auto`，
   瀏覽器會把 `overflow-y` 也算成 auto，導致 sticky 失效，所以不能直接對標頭用 sticky）
+  - dock 的星期必須在**滑動過程中即時跟隨**，不能等吸附結束。
+    軌道的 `scroll` 事件用 rAF 節流直接算 `round(scrollLeft / step)` 換標題；
+    吸附結束後的 110ms debounce 只負責 `normalize()` 與 `markCur()`。
+    只靠 debounce 的話，手機慣性滑動期間星期會停在舊的那天，
+    而且慣性可以持續很久，那段空窗非常明顯
+  - 「今天」標籤只在該片面板真的是今天時顯示（`istoday`），
+    複製過去的標籤預設隱藏
 
 ### 跨日時間對齊
 
