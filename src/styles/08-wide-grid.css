@@ -15,7 +15,11 @@ background:#efeae2;border-radius:4px;padding:1px 6px;margin-left:9px;vertical-al
 .dgrp.today .dhd,.dhd.today{border-bottom-color:#a89670}
 
 .body{display:flex}
-.gut{width:var(--gut);position:sticky;left:0;height:var(--gy);z-index:20;
+/* z-index 要壓過 .headrow（25）：兩條軸都是 sticky，交會處只能有一個贏。
+   輸的那一邊會把「剛好停在邊界上的那一格」切一半 —— 星期贏的話時間會被切成半行，
+   而時間欄只有 --gut 寬、落在 .hcorner 那塊空白角落上，蓋過去不會遮到任何星期字樣；
+   反過來星期蓋時間卻是實實在在少一行時間。所以垂直軸（時間）優先。 */
+.gut{width:var(--gut);position:sticky;left:0;height:var(--gy);z-index:26;
 background:var(--page);flex:0 0 var(--gut)}
 .gut .hr{position:absolute;right:12px;font-size:14px;color:var(--ink3);transform:translateY(-50%);font-variant-numeric:tabular-nums;white-space:nowrap}
 .gut .bl{position:absolute;right:12px;transform:translateY(-50%);display:flex;align-items:center;

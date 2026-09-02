@@ -109,6 +109,21 @@ dist/                 產物
 `LIFF_ID` 由 `build.py --liff-id`（或環境變數 `LIFF_ID`，CI 走 repo Variable）帶入，
 產生 `window.LIFF_ID`；沒設也不會壞，只是不初始化 SDK。設定步驟見 README。
 
+## 寬版的兩條 sticky 軸：時間優先
+
+寬版有兩條 sticky：星期列 `.headrow`（`top:var(--dockH)`）與時間欄 `.gut`（`left:0`）。
+兩條軸的交會處只能有一個贏，輸的那一邊會把「剛好停在邊界上的那一格」切一半。
+
+**時間欄贏**（`.gut` 的 `z-index:26` > `.headrow` 的 `25`）。理由是不對稱的：
+時間欄只有 `--gut` 寬，蓋過去的位置是 `.hcorner` 那塊空白角落，
+**一個星期字樣都不會被遮到**；反過來星期蓋時間，是實實在在少掉一行時間。
+代價只有一個：捲動時星期列的底線在最左邊那 56px 會被時間欄的底色蓋掉 ——
+那一段本來就是空白的角落，不算資訊。
+
+改動 z-index 前先看一眼這串：`.top` 30 ＞ `.nav` 28 ＞ **`.gut` 26 ＞ `.headrow` 25**
+＞ `.ndock` 24。`.hcorner` 的 `z-index:3` 是 `.headrow` 內部的區域值
+（`.headrow` 有 z-index、自己開了一個 stacking context），不要拿來跟上面這串比。
+
 ## 卡片上的時間：一小時只印起始時間
 
 一小時是這裡的預設時長（115 年 9 月這份 107 堂裡有 92 堂），
