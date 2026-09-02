@@ -30,19 +30,31 @@ function panelStep(){
   var a = track.children[0], b = track.children[1];
   return b ? b.offsetLeft - a.offsetLeft : px('--dayw', 320) + px('--gap', 12);
 }
-function setFade(car, f){
-  car.style.setProperty('--fadeL', f + 'px');
-  car.style.setProperty('--fadeR', f + 'px');
+function setFade(car, l, r){
+  car.style.setProperty('--fadeL', l + 'px');
+  car.style.setProperty('--fadeR', (r === undefined ? l : r) + 'px');
+}
+// 翻頁鈕靠 clientWidth 定位，不要用 innerWidth：innerWidth 含垂直捲軸的寬度，
+// 桌機把窄版視窗縮小時鈕會被推到捲軸底下、右半邊看起來就是被切掉
+function placeNav(){
+  var W = document.documentElement.clientWidth || window.innerWidth;
+  navp.style.left = '23px';
+  navn.style.left = (W - 23) + 'px';
 }
 // 單日寬度是算出來的，不是寫死的 320px：手機夠寬就一次擺得下兩天以上，
 // 不必一天一天滑。MINDAY 是「卡片還讀得下去」的下限（實測 150px：時段、老師、
 // 暫停標籤都還放得進一行），MAXDAY 是原本的單日寬，不要因為螢幕大就把卡片拉更寬。
-var MINDAY = 150, MAXDAY = 320;
+var MINDAY = 142, MAXDAY = 320;
 function sizeDays(){
-  // clientWidth 已經扣掉左側時間欄與 .sheet 的內距，也含 layout() 自己塞的置中 padding
-  var W = track.clientWidth;
-  if (W <= 0) return 1;
+  // clientWidth 已經扣掉左側時間欄與 .sheet 的內距，也含 layout() 自己塞的置中 padding。
+  // 再讓回一個 gap 的寬度，理由有兩個，缺一個就會看起來像卡片被切掉：
+  //   1. 軌道是出血到螢幕邊的（.nlist 的 margin-right:-14px），不留白的話最後一欄
+  //      的右框與圓角正好壓在邊界上；
+  //   2. 讓回的剛好是一個 gap，下一欄的左緣就正好落在裁切邊上、露不出來 ——
+  //      讓多一點會露出一條下一張卡的左側色條，讓少一點則是最後一欄貼死邊界。
   var gap = px('--gap', 12);
+  var W = track.clientWidth - gap;
+  if (W <= 0) return 1;
   var per = Math.max(1, Math.min(NDAYS, Math.floor((W + gap) / (MINDAY + gap))));
   var w = Math.min(MAXDAY, Math.floor((W - (per - 1) * gap) / per));
   document.documentElement.style.setProperty('--dayw', w + 'px');
@@ -71,9 +83,12 @@ function layout(){
   }
   if (multi) {
     track.style.paddingLeft = track.style.paddingRight = '0px';
-    setFade(car, 0);
-    navp.style.left = '23px';
-    navn.style.left = (window.innerWidth - 23) + 'px';
+    // 單日寬是整數，平分之後會剩下 1～2px，下一欄的左側色條就會從裁切邊露出那麼一點點。
+    // 那條線看起來就是「卡片被切掉」，所以用右側的漸層把「最後一欄之後的空白」蓋掉 ——
+    // 蓋住的寬度剛好是留白＋餘數，不會遮到任何卡片
+    var used = per * dayw + (per - 1) * gap;
+    setFade(car, 0, Math.max(0, W - used));
+    placeNav();
     return;
   }
   // 當天置中：左右各留 (可視寬 − 單日寬)/2，兩端的日子也能捲到正中
@@ -84,9 +99,7 @@ function layout(){
   var sliver = Math.max(0, side - m * step - gap);
   var f = sliver > 3 ? Math.min(Math.max(sliver, 18), 130) : 0;
   setFade(car, f);
-  var r = car.getBoundingClientRect();
-  navp.style.left = '23px';
-  navn.style.left = (window.innerWidth - 23) + 'px';
+  placeNav();
 }
 // syncRows() 一定要排在 layout() 後面：layout() 會算出新的 --dayw，
 // 卡片寬度變了換行就變了，先量高度等於拿舊寬度的結果去對齊
@@ -97,10 +110,13 @@ function measureDock(){
   var h = Math.round(t.getBoundingClientRect().height);
   document.documentElement.style.setProperty('--dockH', h + 'px');
 }
-// dock 一次列出七天：星期字樣直接抄面板標頭（中英雙語都在裡面，語言切換照舊靠 CSS）
+// dock 是輪播的鏡射：一格對一個面板（含前後兩組複製），順序與寬度都一樣，
+// 這樣 translateX(-scrollLeft) 就能讓星期永遠停在自己那一欄的正上方。
+// 一格對一個「真實日子」是不夠的 —— 慣性滑進複製區時 dock 會整排跑掉。
+// 星期字樣直接抄面板標頭（中英雙語都在裡面，語言切換照舊靠 CSS）
 function buildDock(){
   var f = document.createDocumentFragment();
-  for (var i = NDAYS; i < NDAYS * 2; i++) {
+  for (var i = 0; i < track.children.length; i++) {
     var panel = track.children[i];
     var dk = document.createElement('span');
     dk.className = 'dk' + (panel.classList.contains('today') ? ' today' : '');
@@ -112,12 +128,14 @@ function buildDock(){
   ndockin.textContent = '';
   ndockin.appendChild(f);
 }
-// 捲到哪天就打亮哪天（吃即時的 scrollLeft，慣性滑動途中也會跟著換）
+// 跟著輪播位移（吃即時的 scrollLeft，慣性滑動途中也會跟著換），並打亮最左邊那天。
+// 位移量就是 -scrollLeft：dock 的每一格與面板同寬同間距，又從時間欄右緣起算
 function syncDock(){
   var k = track.classList.contains('full') ? cur
     : ((Math.round(track.scrollLeft / panelStep()) - NDAYS) % NDAYS + NDAYS) % NDAYS;
+  ndockin.style.transform = 'translateX(' + (-track.scrollLeft) + 'px)';
   Array.prototype.forEach.call(ndockin.children, function(el, i){
-    el.classList.toggle('on', i === k);
+    el.classList.toggle('on', i % NDAYS === k);
   });
 }
 function updateDock(){

@@ -617,7 +617,8 @@ for bs, be, blb in BANDS:
 BAND_OF = {h: lb for lb, h in BAND_AT.items()}
 
 a('<div class="ndock narrowonly" id="ndock" data-noexport="1" aria-hidden="true">'
-  '<div class="ndockin" id="ndockin"></div></div>')
+  '<div class="ndockgut"></div>'
+  '<div class="ndockclip"><div class="ndockin" id="ndockin"></div></div></div>')
 a('<div class="nlist narrowonly">')
 a('<div class="ngut" id="ngut"><div class="ngc head"></div>')
 for h in HOURS:
