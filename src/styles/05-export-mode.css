@@ -15,3 +15,10 @@
 .sheet.noto .col.today{background:transparent}
 .sheet.noto .tdy{display:none}
 .sheet.noto .dgrp.today .dhd{border-bottom-color:var(--lane)}
+/* npack — 直式匯出：空堂整列拿掉，各日的卡片往上緊密排列。
+   一旦不再逐時對齊，左側時間欄就對不上任何一張卡（會標錯時間），所以一起收掉；
+   每張卡本身都印著自己的時段，資訊不會遺失。height 要 !important：
+   syncRows() 把跨日對齊的高度寫成 inline style 了 */
+.sheet.npack .ngut{display:none}
+.sheet.npack .hrow.empty{display:none}
+.sheet.npack .hrow{height:auto!important;border-top:0;padding-top:0}

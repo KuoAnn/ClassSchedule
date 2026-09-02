@@ -9,7 +9,9 @@ function setView(v){
     x.classList.toggle('on', on);
     x.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
-  try { localStorage.setItem('yoga-view', v); } catch(e) {}
+  // 網址帶 ?v= 進來的（LINE 交給外部瀏覽器存圖那條路）只是借過一次，
+  // 不要蓋掉這台瀏覽器自己記住的選擇；存完圖 09-liff.js 會把參數清掉
+  if (!qparam('v')) { try { localStorage.setItem('yoga-view', v); } catch(e) {} }
   // 兩種版型要的 viewport 不同（窄版跟裝置寬、寬版是固定寬海報），切換時一起換
   setViewport(v === 'n');
   fitCells();

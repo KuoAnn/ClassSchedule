@@ -11,11 +11,20 @@ function setViewport(narrow){
     ? 'width=device-width,initial-scale=1,viewport-fit=cover'
     : 'width=' + w + ',viewport-fit=cover');
 }
+// 網址參數用小工具：LINE 裡的下載會把狀態帶到外部瀏覽器（?dl=1&v=…&l=…&cat=…），
+// 這支在繪製前就要讀得到 v，所以放在 01-boot.js 而不是 09-liff.js
+function qparam(k){
+  var m = new RegExp('[?&]' + k + '=([^&]*)').exec(location.search || '');
+  return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : '';
+}
 (function(){
   // LINE 內建瀏覽器（含 LIFF）的 UA 一定帶 " Line/"；先掛 .liff 讓 CSS 在繪製前就到位
   var inline = / Line\//i.test(navigator.userAgent || '');
-  var v;
-  try { v = localStorage.getItem('yoga-view'); } catch(e) {}
+  // 網址指定的版型優先於記住的選擇：外部瀏覽器要重現的是 LINE 裡當下那一版
+  var v = qparam('v');
+  if (v !== 'n' && v !== 'w') {
+    try { v = localStorage.getItem('yoga-view'); } catch(e) {}
+  }
   // LIFF 一律先給窄版：手機螢幕塞不下寬版格線
   if (v !== 'n' && v !== 'w') v = (inline || (window.innerWidth || 1200) < 900) ? 'n' : 'w';
   document.documentElement.className = (v === 'n' ? 'nv' : 'wv') + (inline ? ' liff' : '');

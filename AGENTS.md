@@ -72,11 +72,24 @@ dist/                 產物
 2. **`html` 的 class 只能用 `classList` 動，不可以直接指派 `className`。**
    `01-boot.js` 在繪製前掛上的 `.liff`（UA 含 `" Line/"`）會被整串覆蓋掉，
    `inLINE()` 就會回 false，長按存圖與 canvas 降階都失效。這個坑踩過一次。
-3. **在 LINE 裡不能用 `<a download>` 存圖。**
-   LINE 的 WebView（iOS 尤其）直接沒反應。`08-export.js` 改成呼叫
-   `saveImage()`（`09-liff.js`），在 LINE 裡把 PNG 攤成全螢幕讓使用者長按儲存；
-   `.shot img` 的 `-webkit-touch-callout:default` 不能拿掉，拿掉就沒有長按選單。
-   覆蓋層是點下去才建出來的 DOM，所以 `occl.py` / `wcag.py` 掃不到也不需要掃。
+3. **在 LINE 裡不能用 `<a download>` 存圖，所以存圖要丟出去給外部瀏覽器。**
+   LINE 的 WebView（iOS 尤其）直接沒反應。`08-export.js` 按下下載時先問
+   `openExternalDownload()`（`09-liff.js`）：在 LIFF 裡就用
+   `liff.openWindow({external:true})` 把同一份課表開到系統瀏覽器，那邊才存得到檔；
+   **回 true 就直接 return，不要在 WebView 裡先畫一次 canvas**（手機畫這張很慢，
+   而且畫完也用不到）。因為 PNG 是前端現畫的、沒有網址可以傳，所以是用網址參數
+   把「現在這一版」重現出來：`?dl=1&v=<n|w>&l=<zh|en>&cat=<分類>`。
+   - `v` 必須在繪製前就讀到，所以 `qparam()` 放在 `01-boot.js`（不是 `09-liff.js`）；
+     它同時也是 `?v=n` 這種分享連結的入口。
+   - 網址帶 `v` 時 `05-view.js` **不寫** `localStorage`：外部瀏覽器只是借過去存圖一次，
+     不該蓋掉那台瀏覽器自己記住的版型。存完 `09-liff.js` 會把參數 `replaceState` 清掉，
+     所以清掉之後手動切版型仍然照記。
+   - 只有 `liff.isInClient()` 為真才算 LIFF。從聊天室點一般連結進來的是 LINE 內建瀏覽器，
+     那裡 `openWindow` 只會在 LINE 自己開新分頁，等於沒解決問題。
+   這條和沒設 `LIFF_ID`／`liff.init` 失敗一樣，退回舊路：`saveImage()` 把 PNG 攤成全螢幕
+   讓使用者長按儲存；`.shot img` 的 `-webkit-touch-callout:default` 不能拿掉，
+   拿掉就沒有長按選單。覆蓋層是點下去才建出來的 DOM，所以 `occl.py` / `wcag.py`
+   掃不到也不需要掃。
 4. **手機的 canvas 上限比桌機低。**
    `08-export.js` 只在 LINE 或視窗 < 900px 時把 `scale` 壓到 12M 畫素以內；
    桌機維持 `scale:2`，匯出結果與過去完全相同。
@@ -86,6 +99,23 @@ dist/                 產物
 
 `LIFF_ID` 由 `build.py --liff-id`（或環境變數 `LIFF_ID`，CI 走 repo Variable）帶入，
 產生 `window.LIFF_ID`；沒設也不會壞，只是不初始化 SDK。設定步驟見 README。
+
+## 匯出圖片：直式要收掉空堂
+
+畫面上的窄版讓七天逐時對齊（`syncRows()`＋左側 `.ngut` 時間欄），是為了橫向滑動時好比較；
+但**匯出的直式圖片是拿來看整週的**，逐時對齊會留下大片空白（實測 2900px → 2061px）。
+所以 `08-export.js` 在窄版匯出時加 `npack`（`05-export-mode.css`）：
+`.hrow.empty` 整列 `display:none`，其餘 `.hrow` 的高度用 `height:auto!important`
+蓋掉 `syncRows()` 寫上的 inline 高度，卡片就各自往上收。
+
+**時間欄一定要跟著收掉**：卡片不再逐時對齊之後，`.ngc` 的 `10:00`、`11:00`
+會對到別的時段的卡片，那是錯的資訊。每張卡本身都印著自己的時段，收掉不會少資訊，
+少的只有早／午／晚的分段圖示。同理 `.hrow` 的 `border-top` 也拿掉 —
+它代表的是「換一個小時」，緊密排列後那條線不再有意義。
+
+PNG 的 URL 走 `canvas.toBlob()`，`toDataURL()` 只當退路：幾 MB 的 data URL
+在手機瀏覽器上常常直接不下載，而外部瀏覽器下載正是主要路徑。
+
 
 ## 參考資訊
 

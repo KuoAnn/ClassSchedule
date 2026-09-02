@@ -8,7 +8,7 @@
 - 寬版（週課表格線）／窄版（單日輪播）兩種版型，記憶上次選擇
 - 中／英雙語即時切換
 - 分類色票可點擊篩選
-- 一鍵匯出 PNG（樣式跟隨當前模式）
+- 一鍵匯出 PNG（樣式跟隨當前模式；直式會收掉空堂、卡片緊密排列）
 - 全站通過 WCAG AA
 - 可直接掛成 **LINE LIFF**（純靜態、不讀會員資料，不需要登入）
 
@@ -130,7 +130,7 @@ python3 scripts/build.py --liff-id 1234567890-abcdefgh
 | 問題 | 做法 |
 |---|---|
 | 原本 `viewport` 寫死 `width=2040`，手機上整張海報縮到看不清 | 預設 `width=device-width`；切到寬版時 `01-boot.js` / `05-view.js` 才換成版面寬 |
-| LINE WebView 擋掉 `<a download>`，按了沒反應 | 在 LINE 裡改成把 PNG 攤成全螢幕，長按存到相簿（`09-liff.js` 的 `saveImage`） |
+| LINE WebView 擋掉 `<a download>`，按了沒反應 | 在 LIFF 裡改用 `liff.openWindow({external:true})` 把同一份課表（`?dl=1&v=…&l=…&cat=…`）開到系統瀏覽器下載（`09-liff.js` 的 `openExternalDownload`）；沒有 SDK 時退回把 PNG 攤成全螢幕、長按存到相簿（`saveImage`） |
 | 手機 canvas 上限比桌機低，寬版匯出會整個失敗 | `08-export.js` 依版面面積把 scale 壓到 12M 畫素以內（桌機仍是 scale 2） |
 | iOS 把「11:00–12:00」判成電話號碼 | `<meta name="format-detection" content="telephone=no,date=no,address=no">` |
 | 瀏海／home indicator 蓋住工具列與底部 | `viewport-fit=cover` ＋ `env(safe-area-inset-*)`（`13-liff.css`） |
