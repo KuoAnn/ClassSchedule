@@ -84,10 +84,14 @@ FAKE_CLOCK=1 python3 scripts/checks/wcag.py
 ## CI
 
 `.github/workflows/build.yml`：推到 `main`（或手動 dispatch）就重新產檔、跑四項檢查
-（含 `FAKE_CLOCK` 的第二輪），通過後把 `dist/` 發佈到 GitHub Pages，
-並附上可直接下載的單一 HTML artifact。
+（含 `FAKE_CLOCK` 的第二輪），並附上可直接下載的單一 HTML artifact；
+發佈 Pages 是獨立的 `pages` job，Pages 出問題不會連坐產檔與檢查的結果。
 
-第一次使用要先到 repo **Settings → Pages → Source** 選 **GitHub Actions**。
+`configure-pages` 帶 `enablement: true`，第一次跑會自己把 Pages 開起來並設成
+**GitHub Actions** 來源，不需要手動去 Settings 點。若 repo 是不支援 Pages 的
+方案（私有庫免費方案），`pages` job 會失敗但 `build` 仍會綠 — 把 `pages` job
+移掉即可，artifact 照樣拿得到。
+
 只改 `*.md` 的 commit 不會觸發。
 
 ## 無障礙

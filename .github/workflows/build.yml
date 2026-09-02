@@ -13,10 +13,10 @@ permissions:
   pages: write
   id-token: write
 
-# 同時只跑一個發佈，後推的蓋掉前一個
+# 只允許一個發佈進行中；排隊中的舊 run 直接跳過，但不打斷正在跑的發佈
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -67,17 +67,30 @@ jobs:
           path: dist/*.html
           if-no-files-found: error
 
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  deploy:
+  # 發佈獨立成一個 job：Pages 沒開或沒權限時，上面的產檔與四項檢查結果不會被連坐
+  pages:
     needs: build
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
+      - name: 取回 build 產物
+        uses: actions/download-artifact@v4
+        with:
+          name: schedule-html
+          path: dist
+
+      # enablement: true 會在 repo 還沒開 Pages 時自己開起來並設成 GitHub Actions 來源，
+      # 少了它第一次跑會死在 "Get Pages site failed ... Not Found"
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
       - id: deploy
         uses: actions/deploy-pages@v4
