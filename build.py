@@ -397,8 +397,9 @@ overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 :where(button,a,[tabindex]):focus-visible{outline:3px solid #2f5d86;outline-offset:2px;
 border-radius:6px}
 @media (prefers-reduced-motion: reduce){
-  *{animation-duration:.001ms!important;animation-iteration-count:1!important;
-    transition-duration:.001ms!important;scroll-behavior:auto!important}
+  *,*::before,*::after{animation-duration:.001ms!important;
+    animation-iteration-count:1!important;transition-duration:.001ms!important;
+    scroll-behavior:auto!important}
 }
 body{background:var(--page);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
 .wrap{width:__SW__px;margin:0 auto}
@@ -603,7 +604,7 @@ border-radius:7px;display:flex;flex-direction:column;gap:4px}
 .ev>*{flex:0 0 auto;min-width:0}
 .ev .tp{min-width:0}
 .ev .nr{display:flex;align-items:flex-start;gap:6px;min-width:0}
-.ev .n{flex:1;min-width:0;font-size:16px;font-weight:500;line-height:1.2;letter-spacing:.01em;
+.ev .n{flex:1;min-width:0;font-size:16px;font-weight:500;line-height:1.2;letter-spacing:.01em;overflow-wrap:break-word;
 display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ev .t{font-size:13.5px;color:var(--ink2);line-height:1.26;font-variant-numeric:tabular-nums}
 .ev .t .hh{white-space:nowrap}
@@ -622,8 +623,9 @@ border-radius:4px;padding:1px 5px;letter-spacing:.02em;white-space:nowrap}
 .ev .x>.stop{color:#8f3b24;background:#f4ddd9}
 .ev .cg{margin-left:auto;font-size:10.5px;font-weight:500;line-height:1.4;letter-spacing:.04em;
 white-space:nowrap;border-radius:4px;padding:1px 5px}
-.ev.nar{padding:5px 7px;gap:3px}
-.ev.nar .n{font-size:14px;line-height:1.16;overflow-wrap:break-word}
+.ev.nar{padding:5px 6px;gap:3px}
+.ev.nar .nr{gap:3px}
+.ev.nar .n{font-size:14px;line-height:1.16;overflow-wrap:anywhere;-webkit-line-clamp:4}
 .ev.nar .lv{font-size:10px;padding:0 4px;line-height:1.2}
 .ev.nar .t{font-size:11.5px}
 .ev.nar .m{font-size:11.5px;white-space:normal;line-height:1.24;text-overflow:clip;overflow-wrap:break-word}
@@ -682,17 +684,22 @@ font-size:13px;color:var(--ink2);padding:5px 14px;border-radius:16px;cursor:poin
 letter-spacing:.06em;margin-left:4px}
 .clear:hover{background:#faf7f1}
 .keys.on .clear{display:inline-block}
-/* 已結束：整張卡淡化（此處刻意不套 WCAG 對比要求，見 AI_INSTRUCTIONS §14） */
+/* 結束：整張卡淡化（此處刻意不套 WCAG 對比要求，見 AI_INSTRUCTIONS §14） */
 .ev.st-done,.lc.st-done{filter:opacity(.4)}
-/* 進行中：外圈提示，不動邊框樣式 */
-.ev.st-live,.lc.st-live{box-shadow:0 0 0 2px #4c6636}
-.stt{display:inline-block;font-weight:500;font-size:11px;line-height:1.4;
-border-radius:4px;padding:1px 6px;letter-spacing:.02em}
+/* 狀態標籤與難度標籤共用右上角，尺寸一致；有狀態時難度不顯示 */
+.stt{flex:0 0 auto;font-style:normal;font-weight:500;font-size:10.5px;line-height:1.25;
+border-radius:4px;padding:0 5px;letter-spacing:.04em;white-space:nowrap}
+.st-done .lv,.st-live .lv{display:none}
 .st-done .stt{color:#5c5852;background:#e4e0d8}
 .st-live .stt{color:#2f5e37;background:#d7e7d9}
-.ev.nar .stt,.lc .stt{font-size:10px}
+.st-live .stt::before{content:"";display:inline-block;width:5px;height:5px;
+border-radius:50%;background:#3f7a49;margin-right:5px;vertical-align:1px;
+animation:livepulse 1.5s ease-in-out infinite}
+@keyframes livepulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.28;transform:scale(.72)}}
+.ev.nar .stt,.ev.nar .lv{font-size:9px;padding:0 3px;letter-spacing:0;
+max-width:50%;overflow:hidden;text-overflow:ellipsis}
+.lc .stt{font-size:11px;padding:1px 6px;line-height:1.3}
 .sheet.nopast .st-done{filter:none}
-.sheet.nopast .st-live{box-shadow:none}
 .sheet.on .ev,.sheet.on .lc{opacity:.14}
 .sheet.on .ev.match,.sheet.on .lc.match{opacity:1}
 .key u{text-decoration:none;color:var(--ink3);font-size:13px;margin-left:5px}
@@ -940,8 +947,8 @@ function fitCells(){
 })();
 // 當天課程三種狀態：已結束（反灰淡化）／進行中（標籤＋外圈）／待開課（不標）
 var STATE = {
-  done: {zh: '已結束', en: 'Ended'},
-  live: {zh: '進行中', en: 'In progress'}
+  done: {zh: '結束', en: 'Ended'},
+  live: {zh: '進行中', en: 'Live'}
 };
 function markPast(){
   var d = new Date(), td = (d.getDay() + 6) % 7, now = d.getHours() * 60 + d.getMinutes();
@@ -956,12 +963,12 @@ function markPast(){
     }
     el.classList.toggle('st-done', state === 'done');
     el.classList.toggle('st-live', state === 'live');
-    var bt = el.querySelector('.bt'), chip = el.querySelector('.stt');
-    if (state && bt) {
+    var slot = el.querySelector('.nr'), chip = el.querySelector('.stt');
+    if (state && slot) {
       if (!chip) {
-        chip = document.createElement('span');
+        chip = document.createElement('i');
         chip.className = 'stt';
-        bt.insertBefore(chip, bt.firstChild);
+        slot.appendChild(chip);
       }
       if (chip.dataset.s !== state) {
         chip.dataset.s = state;

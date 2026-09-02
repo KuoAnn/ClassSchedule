@@ -172,12 +172,25 @@ FAKE_CLOCK=1 python3 checks/wcag.py   # 固定時間驗證「今天／已開始�
 
   | 狀態 | 條件 | 呈現 |
   |---|---|---|
-  | 已結束 | `now ≥ end` | 整張卡 `filter: opacity(.4)` 淡化 ＋ 灰色「已結束」標籤 |
-  | 進行中 | `start ≤ now < end` | 2px 綠色外圈（`box-shadow`，不動邊框樣式）＋ 綠色「進行中」標籤 |
+  | 結束 | `now ≥ end` | 整張卡 `filter: opacity(.4)` 淡化 ＋ 灰色「結束」標籤 |
+  | 進行中 | `start ≤ now < end` | 綠色「進行中」標籤＋前置圓點 live-pulse 動畫，卡片本身不加強 |
   | 待開課 | `now < start` | 不做任何標記 |
 
-  用 `filter` 而非 `opacity`，才能與篩選的 `opacity` 疊加而不互相覆蓋。
-  進行中用 `box-shadow` 而非 `border`，維持「所有卡片邊框風格一致」的規則。
+  - 用 `filter` 而非 `opacity`，才能與篩選的 `opacity` 疊加而不互相覆蓋
+  - **狀態標籤與難度標籤共用右上角同一格**（都放在 `.nr` 裡），
+    有狀態時難度隱藏（`.st-done .lv,.st-live .lv{display:none}`）
+  - 進行中不對卡片本身做任何強化（不加外圈、不改底色），只靠標籤
+  - live-pulse 是標籤前置圓點的 `opacity`＋`scale` 動畫。
+    ⚠️ `prefers-reduced-motion` 的關閉規則必須寫成 `*,*::before,*::after`，
+    只寫 `*` 不會命中偽元素
+  - ⚠️ 標籤搬到課名同一列之後，flex 會讓課名**每一行**都被標籤壓縮
+    （不是只有第一行），所以：
+    並排卡的標籤縮到 9px、`max-width:50%`＋ellipsis（否則英文長字串會把
+    課名壓成 0 寬）、課名 `-webkit-line-clamp:4`、`overflow-wrap:anywhere`、
+    卡片內距與列間距收緊。試過用 `float` 讓文字繞排，結果標籤會溢出到
+    時間那一行造成重疊，**不要再試**
+  - 英文的進行中用 `Live` 而非 `In progress`——後者在 82px 寬的並排卡裡
+    會佔滿整列
 
 ### Dock（常駐）
 
