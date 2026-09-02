@@ -106,12 +106,12 @@ EN_MONTH = ["January", "February", "March", "April", "May", "June", "July",
             "August", "September", "October", "November", "December"]
 EN_BRANCH = "Guting Studio"
 VIEW_ICON = {
-    "w": ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
+    "w": ('<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
           'stroke-linejoin="round"><rect x="3.2" y="4.2" width="7.2" height="7.2" rx="1.3"/>'
           '<rect x="13.6" y="4.2" width="7.2" height="7.2" rx="1.3"/>'
           '<rect x="3.2" y="12.6" width="7.2" height="7.2" rx="1.3"/>'
           '<rect x="13.6" y="12.6" width="7.2" height="7.2" rx="1.3"/></svg>'),
-    "n": ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
+    "n": ('<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
           'stroke-linecap="round"><circle cx="4.6" cy="6.4" r="1.15" fill="currentColor" stroke="none"/>'
           '<circle cx="4.6" cy="12" r="1.15" fill="currentColor" stroke="none"/>'
           '<circle cx="4.6" cy="17.6" r="1.15" fill="currentColor" stroke="none"/>'
@@ -121,9 +121,9 @@ VIEW_ICON = {
 BYLINE = (_a.byline, _a.byline_en)
 EN_DAY = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 ICON = {
-    "早": '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18.5h16M7.6 18.5a4.4 4.4 0 0 1 8.8 0M12 4v3.2M5.8 7.4l2.1 2.1M18.2 7.4l-2.1 2.1"/></svg>',
-    "午": '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 2.8v2.3M12 18.9v2.3M2.8 12h2.3M18.9 12h2.3M5.5 5.5l1.6 1.6M16.9 16.9l1.6 1.6M18.5 5.5l-1.6 1.6M7.1 16.9l-1.6 1.6"/></svg>',
-    "晚": '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 14.9A8.6 8.6 0 0 1 9.1 3.8a8.6 8.6 0 1 0 11.1 11.1z"/></svg>',
+    "早": '<svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18.5h16M7.6 18.5a4.4 4.4 0 0 1 8.8 0M12 4v3.2M5.8 7.4l2.1 2.1M18.2 7.4l-2.1 2.1"/></svg>',
+    "午": '<svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 2.8v2.3M12 18.9v2.3M2.8 12h2.3M18.9 12h2.3M5.5 5.5l1.6 1.6M16.9 16.9l1.6 1.6M18.5 5.5l-1.6 1.6M7.1 16.9l-1.6 1.6"/></svg>',
+    "晚": '<svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 14.9A8.6 8.6 0 0 1 9.1 3.8a8.6 8.6 0 1 0 11.1 11.1z"/></svg>',
 }
 
 EN_BAND = {"早": "AM", "午": "MID", "晚": "PM"}
@@ -138,7 +138,8 @@ CATCOUNT = {}
 
 
 def bi(zh, en):
-    return '<span class="zh">%s</span><span class="en">%s</span>' % (zh, en)
+    return ('<span class="zh" lang="zh-Hant">%s</span>'
+            '<span class="en" lang="en">%s</span>' % (zh, en))
 
 
 def mn(t):
@@ -176,7 +177,7 @@ for r in rows:
     NAMEMAP.setdefault(zh, set()).add(raw)
     S[di].append({
         "s": r["開始時間"].strip(), "e": r["結束時間"].strip(),
-        "n": zh, "en": en,
+        "n": zh, "en": en, "di": di,
         "t": r["老師"].strip(),
         "c": cat, "lv": r["級別"].strip(), "kind": kind, "who": who, "dates": dates,
     })
@@ -360,7 +361,8 @@ def note_html(it):
 def emit_keys():
     present = [c for c in ORDER
                if c not in NO_LEGEND and any(x["c"] == c for day in S for x in day)]
-    a('<div class="keys">')
+    a('<div class="keys" role="group" aria-label="%s">'
+      % ("課程分類篩選 / Filter by category"))
     for c in present:
         sz, se = CAT_SHORT.get(c, (c, c))
         fz, fe = esc(c), esc(EN_CAT.get(c, c))
@@ -390,6 +392,14 @@ a("""<style>
 --rule:#e3dcd1;--rule2:#cdc3b4;--lane:#c3b6a1;--band1:#fdfcfa;--band2:#f8f3eb;--band3:#f0e9de;
 --gy:__GH__px;--gut:__GUT__px}
 *{box-sizing:border-box;margin:0;padding:0}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;
+overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+:where(button,a,[tabindex]):focus-visible{outline:3px solid #2f5d86;outline-offset:2px;
+border-radius:6px}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
 body{background:var(--page);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
 .wrap{width:__SW__px;margin:0 auto}
 html.nv .wrap{width:auto;max-width:none}
@@ -623,7 +633,7 @@ white-space:nowrap;border-radius:4px;padding:1px 5px}
 .keys{display:flex;flex-wrap:wrap;gap:9px 22px;align-items:center}
 .keys.on .key:not(.sel){opacity:.4}
 .key{border:0;background:transparent;font-family:inherit;cursor:pointer;
-padding:3px 6px;margin:-3px -2px;border-radius:7px;
+padding:5px 7px;margin:-5px -3px;border-radius:7px;min-height:26px;
 display:flex;align-items:center;gap:7px;font-size:14px;color:var(--ink2);white-space:nowrap}
 .key:hover{background:rgba(0,0,0,.05)}
 .key.sel{background:rgba(0,0,0,.08)}
@@ -633,8 +643,14 @@ font-size:13px;color:var(--ink2);padding:5px 14px;border-radius:16px;cursor:poin
 letter-spacing:.06em;margin-left:4px}
 .clear:hover{background:#faf7f1}
 .keys.on .clear{display:inline-block}
-.ev.past,.lc.past{filter:opacity(.42)}
-.sheet.nopast .past{filter:none}
+.ev.past,.lc.past{background:#eceae5!important;border-color:#d6d1c8!important;
+border-left-color:#c2bcb1!important}
+.ev.past .n,.lc.past .n{color:#46423c!important}
+.ev.past .cg,.ev.past .lv,.lc.past .cg,.lc.past .lv{background:#e4e0d8!important;color:#5c5852!important}
+.done{display:inline-block;font-weight:500;font-size:11px;line-height:1.4;
+border-radius:4px;padding:1px 6px;letter-spacing:.02em;color:#5c5852;background:#e4e0d8}
+.ev.nar .done,.lc .done{font-size:10px}
+.sheet.nopast .past{background:inherit!important}
 .sheet.on .ev,.sheet.on .lc{opacity:.14}
 .sheet.on .ev.match,.sheet.on .lc.match{opacity:1}
 .key u{text-decoration:none;color:var(--ink3);font-size:13px;margin-left:5px}
@@ -645,7 +661,7 @@ letter-spacing:.06em;margin-left:4px}
 <script>(function(){var v;try{v=localStorage.getItem('yoga-view')}catch(e){}
 if(v!=='n'&&v!=='w')v=(window.innerWidth||1200)<900?'n':'w';
 document.documentElement.className=(v==='n'?'nv':'wv')})();</script>
-<div class="wrap"><div class="sheet" id="sheet">"""
+<div class="wrap"><main class="sheet" id="sheet">"""
   .replace("__GH__", "%.0f" % GH).replace("__GUT__", str(GUT)).replace("__SW__", str(SHEET_W)))
 
 a('<div class="top"><div class="trow">')
@@ -653,15 +669,17 @@ a('<div class="hd"><h1>%s<em>%s</em></h1><div class="by">%s</div></div>' % (
     bi("%d月課表" % MONTH, "%s Schedule" % EN_MONTH[MONTH - 1]),
     bi(BRANCH, EN_BRANCH), bi(esc(BYLINE[0]), esc(BYLINE[1]))))
 a('<div class="tools" data-noexport="1">'
-  '<div class="seg" id="view">'
-  '<button data-v="w" aria-label="Grid view" title="寬版">' + VIEW_ICON["w"] + '</button>'
-  '<button data-v="n" aria-label="List view" title="窄版">' + VIEW_ICON["n"] + '</button></div>'
-  '<div class="seg" id="lang"><button data-l="zh" class="on">中</button>'
-  '<button data-l="en">EN</button></div>'
+  '<div class="seg" id="view" role="group" aria-label="版型 / Layout">'
+  '<button data-v="w" aria-pressed="true" aria-label="寬版格線 / Grid view" title="寬版">' + VIEW_ICON["w"] + '</button>'
+  '<button data-v="n" aria-pressed="false" aria-label="窄版清單 / List view" title="窄版">' + VIEW_ICON["n"] + '</button></div>'
+  '<div class="seg" id="lang" role="group" aria-label="語言 / Language">'
+  '<button data-l="zh" class="on" aria-pressed="true" lang="zh-Hant" '
+  'aria-label="中文">中</button>'
+  '<button data-l="en" aria-pressed="false" lang="en" aria-label="English">EN</button></div>'
   '<button id="dl" aria-label="Download image">'
-  '<svg class="i-dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
+  '<svg class="i-dl" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
   'stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11M7.4 10l4.6 4.6 4.6-4.6M4.5 20h15"/></svg>'
-  '<svg class="i-sp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
+  '<svg class="i-sp" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
   'stroke-linecap="round"><path d="M12 3.2a8.8 8.8 0 1 0 8.8 8.8"/></svg>'
   '</button>'
   '</div>')
@@ -751,8 +769,39 @@ def card_parts(it):
         cg = ('<span class="cg" style="color:%s;background:%s">%s</span>'
               % (checked(fit(mix(base, "#241F1A", 0.34), chipbg), chipbg, "分類標籤 " + cz),
                  chipbg, bi(esc(cz), esc(ce))))
+    LVFULL = {"初": ("初級", "Beginner"), "中": ("中等", "Intermediate"),
+              "高": ("進階", "Advanced")}
+    lvz, lve = LVFULL.get(it["lv"], (it["lv"], it["lv"]))
+    tbase = re.sub(r"（[^）]*）|\([^)]*\)", "", it["t"]).strip()
+    tz = tbase
+    te = EN_TEACHER.get(tbase, tbase)
+    if "印籍" in it["t"]:
+        tz += "（印籍）"
+        te += " (Indian)"
+    if re.search(r"（EN）|\(EN\)", it["t"]) or tbase in ALWAYS_EN:
+        tz += "，英文授課"
+        te += ", taught in English"
+    nz = ne = ""
+    if it["kind"] == "代課":
+        nz = "，%s 由 %s 代課" % ("・".join(it["dates"]), it["who"])
+        ne = ", substitute %s on %s" % (it["who"], "・".join(it["dates"]))
+    elif it["kind"] == "暫停":
+        nz = "，%s 暫停" % "・".join(it["dates"])
+        ne = ", cancelled on %s" % "・".join(it["dates"])
+    elif it["kind"]:
+        d0 = it["dates"][0] if it["dates"] else ""
+        rest = "・".join(it["dates"][1:])
+        nz = "，%s 由 %s 代課，%s 暫停" % (d0, it["who"], rest)
+        ne = ", substitute %s on %s, cancelled on %s" % (it["who"], d0, rest)
+    dz = DAYNAME[it["di"]]
+    de_ = EN_DAY[it["di"]]
+    labz = "%s %s，%s 至 %s，%s，%s，%s%s" % (
+        dz, it["n"], it["s"], it["e"], tz, it["c"], lvz, nz)
+    labe = "%s %s, %s to %s, %s, %s, %s%s" % (
+        de_, it["en"], it["s"], it["e"], te, EN_CAT.get(it["c"], it["c"]), lve, ne)
     return dict(base=base, hi=hi, cardbg=cardbg, edge=edge, name=name, time=time,
-                lv=lv, who=who, note=note, cg=cg)
+                lv=lv, who=who, note=note, cg=cg,
+                labz=esc(labz.replace('"', '')), labe=esc(labe.replace('"', '')))
 
 
 for day in S:
@@ -764,8 +813,9 @@ for day in S:
         hh = ypos(mn(it["e"])) - ypos(mn(it["s"])) - 4
         cls = ("ev" + (" nar" if n > 1 else "")
                + (" hi" if p["hi"] else "") + (" lvd" if it["lv"] in EN_LV else ""))
-        a('<div class="%s" data-cat="%s" data-base="%s" data-start="%d" style="top:%.1fpx;height:%.1fpx;left:calc(%.4f%% + 3px);width:calc(%.4f%% - 6px);background:%s;border-color:%s;border-left-color:%s">'
-          % (cls, esc(it["c"]), p["base"], mn(it["s"]), top, hh, ci * 100.0 / n, 100.0 / n,
+        a('<div class="%s" role="group" aria-label="%s" data-lab-en="%s" data-cat="%s" data-base="%s" data-start="%d" style="top:%.1fpx;height:%.1fpx;left:calc(%.4f%% + 3px);width:calc(%.4f%% - 6px);background:%s;border-color:%s;border-left-color:%s">'
+          % (cls, p["labz"], p["labe"], esc(it["c"]), p["base"], mn(it["s"]),
+             top, hh, ci * 100.0 / n, 100.0 / n,
              p["cardbg"], p["edge"], p["base"]))
         a('<div class="tp"><div class="nr">%s%s</div>%s%s</div>'
           % (p["name"], p["lv"], p["time"], p["who"]))
@@ -784,7 +834,7 @@ for bs, be, blb in BANDS:
             BAND_AT.setdefault(blb, h)
 BAND_OF = {h: lb for lb, h in BAND_AT.items()}
 
-a('<div class="ndock narrowonly" id="ndock" data-noexport="1"></div>')
+a('<div class="ndock narrowonly" id="ndock" data-noexport="1" aria-hidden="true"></div>')
 a('<div class="nlist narrowonly">')
 a('<div class="ngut" id="ngut"><div class="ngc head"></div>')
 for h in HOURS:
@@ -804,8 +854,8 @@ for di, day in enumerate(S):
         a('<div class="hrow%s" data-h="%d">' % ("" if g else " empty", h))
         for it in g:
             p = card_parts(it)
-            a('<article class="lc%s" data-cat="%s" data-start="%d" style="background:%s;border-color:%s;border-left-color:%s">'
-              % (" hi" if p["hi"] else "", esc(it["c"]), mn(it["s"]),
+            a('<article class="lc%s" aria-label="%s" data-lab-en="%s" data-cat="%s" data-start="%d" style="background:%s;border-color:%s;border-left-color:%s">'
+              % (" hi" if p["hi"] else "", p["labz"], p["labe"], esc(it["c"]), mn(it["s"]),
                  p["cardbg"], p["edge"], p["base"]))
             a('<div class="nr">%s%s</div>%s%s' % (p["name"], p["lv"], p["time"], p["who"]))
             a('<div class="bt">%s%s</div>' % (p["note"], p["cg"]))
@@ -814,15 +864,16 @@ for di, day in enumerate(S):
     a('</section>')
 a('</div>')
 a('<button class="nav p" id="navp" data-noexport="1" aria-label="Previous day">'
-  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
+  '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
   'stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button>')
 a('<button class="nav n" id="navn" data-noexport="1" aria-label="Next day">'
-  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
+  '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
   'stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg></button>')
 a('</div></div>')
 a('</div></div>')
 
-a('</div></div>')
+a('<div class="sr-only" role="status" aria-live="polite" id="live"></div>')
+a('</main></div>')
 a('<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>')
 a("""<script>
 function fitCells(){
@@ -844,12 +895,23 @@ function fitCells(){
     el.classList.add('today');
   });
 })();
+var DONE = {zh: '已開始', en: 'Started'};
 function markPast(){
   var d = new Date(), td = (d.getDay() + 6) % 7, now = d.getHours() * 60 + d.getMinutes();
   document.querySelectorAll('.ev,.lc').forEach(function(el){
     var host = el.closest('[data-day]');
-    el.classList.toggle('past',
-      !!host && +host.dataset.day === td && +el.dataset.start < now);
+    var p = !!host && +host.dataset.day === td && +el.dataset.start < now;
+    el.classList.toggle('past', p);
+    var bt = el.querySelector('.bt'), chip = el.querySelector('.done');
+    if (p && bt && !chip) {
+      chip = document.createElement('span');
+      chip.className = 'done';
+      chip.innerHTML = '<span class="zh" lang="zh-Hant">' + DONE.zh +
+                       '</span><span class="en" lang="en">' + DONE.en + '</span>';
+      bt.insertBefore(chip, bt.firstChild);
+    } else if (!p && chip) {
+      chip.remove();
+    }
   });
 }
 markPast();
@@ -863,11 +925,13 @@ var NDAYS = track.children.length, vpos = NDAYS;
   for (var i = real.length - 1; i >= 0; i--) {
     var c = real[i].cloneNode(true);
     c.classList.add('clone');
+    c.setAttribute('aria-hidden', 'true');
     track.insertBefore(c, track.firstChild);
   }
   real.forEach(function(el){
     var c = el.cloneNode(true);
     c.classList.add('clone');
+    c.setAttribute('aria-hidden', 'true');
     track.appendChild(c);
   });
   markPast();
@@ -1038,7 +1102,9 @@ var vseg = document.getElementById('view');
 function setView(v){
   document.documentElement.className = (v === 'n' ? 'nv' : 'wv');
   Array.prototype.forEach.call(vseg.children, function(x){
-    x.classList.toggle('on', x.dataset.v === v);
+    var on = x.dataset.v === v;
+    x.classList.toggle('on', on);
+    x.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
   try { localStorage.setItem('yoga-view', v); } catch(e) {}
   fitCells();
@@ -1052,6 +1118,21 @@ vseg.addEventListener('click', function(e){
 });
 setView(document.documentElement.classList.contains('nv') ? 'n' : 'w');
 
+// 4.1.3 篩選結果用 aria-live 朗讀
+function announce(){
+  var live = document.getElementById('live');
+  if (!live) return;
+  var en = document.getElementById('sheet').classList.contains('en');
+  if (picked === null) {
+    live.textContent = en ? 'Showing all classes' : '顯示全部課程';
+  } else {
+    var n = document.querySelectorAll('.ev.match').length;
+    var k = document.querySelector('.key[data-cat="' + picked + '"]');
+    var lab = k ? (k.querySelector(en ? '.en' : '.zh') || {}).textContent : picked;
+    live.textContent = en ? ('Filtered: ' + lab + ', ' + n + ' classes')
+                          : ('已篩選：' + lab + '，共 ' + n + ' 堂');
+  }
+}
 // 分類篩選：單選，再點同一個即取消
 var picked = null;
 function applyFilter(){
@@ -1066,6 +1147,7 @@ function applyFilter(){
   document.querySelectorAll('.ev,.lc').forEach(function(ev){
     ev.classList.toggle('match', ev.dataset.cat === picked);
   });
+  announce();
 }
 document.querySelector('.keys').addEventListener('click', function(e){
   var k = e.target.closest('.key'); if(!k) return;
@@ -1075,13 +1157,26 @@ document.querySelector('.keys').addEventListener('click', function(e){
 document.getElementById('clear').addEventListener('click', function(){
   picked = null; applyFilter();
 });
+function applyLang(l){
+  var sheet = document.getElementById('sheet'), en = (l === 'en');
+  sheet.classList.toggle('en', en);
+  document.documentElement.lang = en ? 'en' : 'zh-Hant';
+  var seg = document.getElementById('lang');
+  Array.prototype.forEach.call(seg.children, function(x){
+    var on = x.dataset.l === l;
+    x.classList.toggle('on', on);
+    x.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  // 卡片的無障礙名稱也要跟著換語言
+  document.querySelectorAll('[data-lab-en]').forEach(function(el){
+    if (!el.dataset.labZh) el.dataset.labZh = el.getAttribute('aria-label');
+    el.setAttribute('aria-label', en ? el.dataset.labEn : el.dataset.labZh);
+  });
+  announce();
+}
 document.getElementById('lang').addEventListener('click', function(e){
   var b = e.target.closest('button'); if(!b) return;
-  var sheet = document.getElementById('sheet');
-  sheet.classList.toggle('en', b.dataset.l === 'en');
-  Array.prototype.forEach.call(this.children, function(x){
-    x.classList.toggle('on', x.dataset.l === b.dataset.l);
-  });
+  applyLang(b.dataset.l);
   fitCells();
   syncRows();
 });
@@ -1089,12 +1184,14 @@ document.getElementById('lang').addEventListener('click', function(e){
 a("""<script>
 document.getElementById('dl').addEventListener('click', function(){
   var btn=this, sheet=document.getElementById('sheet');
-  btn.disabled=true; btn.classList.add('busy');
+  btn.disabled=true; btn.classList.add('busy'); btn.setAttribute('aria-busy','true');
   var hide=sheet.querySelectorAll('[data-noexport]');
   (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(function(){
     fitCells();
     var nar = document.documentElement.classList.contains('nv');
     sheet.classList.add('nopast','flat','noto');
+    document.querySelectorAll('.done').forEach(function(c){ c.remove(); });
+    document.querySelectorAll('.past').forEach(function(c){ c.classList.remove('past'); });
     if (nar && !track.classList.contains('full')) sheet.classList.add('weekexp');
     hide.forEach(function(el){el.style.visibility='hidden'});
     return html2canvas(sheet,{scale:2,backgroundColor:'#F4F0E9',useCORS:true,
@@ -1102,17 +1199,20 @@ document.getElementById('dl').addEventListener('click', function(){
   }).then(function(canvas){
     hide.forEach(function(el){el.style.visibility=''});
     sheet.classList.remove('nopast','flat','noto','weekexp');
+    markPast();
     var a=document.createElement('a');
     var en = sheet.classList.contains('en');
     var nv = document.documentElement.classList.contains('nv');
     a.download = (en ? '__FNE__' : '__FN__')
       .replace('.png', (nv ? (en ? '-vertical' : '-直式') : '') + '.png');
     a.href=canvas.toDataURL('image/png'); a.click();
-    btn.disabled=false; btn.classList.remove('busy');
+    btn.disabled=false; btn.classList.remove('busy'); btn.removeAttribute('aria-busy');
   }).catch(function(e){
     hide.forEach(function(el){el.style.visibility=''});
     sheet.classList.remove('nopast','flat','noto','weekexp');
-    btn.disabled=false; btn.classList.remove('busy'); alert('Export failed: '+e);
+    markPast();
+    btn.disabled=false; btn.classList.remove('busy'); btn.removeAttribute('aria-busy');
+    alert('Export failed: '+e);
   });
 });
 </script>""".replace("__FN__", "%s-%d月課表.png" % (BRANCH, MONTH)).replace("__FNE__", "%s-%s-schedule.png" % (EN_BRANCH.replace(" ", "-"), EN_MONTH[MONTH - 1])))

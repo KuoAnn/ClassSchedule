@@ -1,3 +1,4 @@
+import os
 # 驗證：每張卡片的顏色都必須等於其分類的色票值
 import csv, re, colorsys, json
 from playwright.sync_api import sync_playwright
@@ -33,13 +34,20 @@ for r in rows:
     c=CAT_FIX.get(r['分類'].strip(), r['分類'].strip())
     want[c]=want.get(c,0)+1
 
+FAKEINIT = """(() => { const fixed = new Date('2026-09-02T14:20:00+08:00').getTime(); const OD = Date;
+ function D(...a){ return a.length ? new OD(...a) : new OD(fixed); }
+ D.now = () => fixed; D.parse = OD.parse; D.UTC = OD.UTC; D.prototype = OD.prototype;
+ window.Date = D; })();""" if os.environ.get('FAKE_CLOCK') else None
 with sync_playwright() as p:
-    b=p.chromium.launch(); pg=b.new_page(viewport={"width":2100,"height":1520})
+    b=p.chromium.launch(); ctx=b.new_context(viewport={"width":2100,"height":1520}, timezone_id='Asia/Taipei')
+    (ctx.add_init_script(FAKEINIT) if FAKEINIT else None)
+    pg=ctx.new_page()
     pg.goto(URL); pg.wait_for_timeout(3500)
     cards=pg.evaluate("""()=>[...document.querySelectorAll('.ev,.dgrp:not(.clone) .lc')].map(e=>{
       const cs=getComputedStyle(e); const cg=e.querySelector('.cg');
       return {cat:e.dataset.cat, base:e.dataset.base, off:e.classList.contains('off'),
               kind:e.classList.contains('lc')?'lc':'ev',
+              past:e.classList.contains('past'),
               bar:cs.borderLeftColor, bg:cs.backgroundColor,
               chip:cg?getComputedStyle(cg).backgroundColor:null,
               name:e.querySelector('.n').innerText.trim()};})""")
@@ -52,8 +60,12 @@ for c in cards:
     exp=PALETTE.get(cat)
     if exp is None: bad.append((c['name'],cat,'分類無色票')); continue
     if c['base'] and c['base'].upper()!=exp.upper(): bad.append((c['name'],cat,'data-base 不符 %s'%c['base']))
-    if False:
-        pass
+    if c['past']:
+        # 已開始：刻意轉為中性灰（不降低文字對比），驗證是否為約定色
+        if rgb(c['bar'])!=hx('#c2bcb1'): bad.append((c['name'],cat,'已開始卡左色條 %s'%c['bar']))
+        if rgb(c['bg'])!=hx('#eceae5'): bad.append((c['name'],cat,'已開始卡底色 %s'%c['bg']))
+        if cat not in NO_CAT_TAG and c['chip'] and rgb(c['chip'])!=hx('#e4e0d8'):
+            bad.append((c['name'],cat,'已開始卡標籤底色 %s'%c['chip']))
     else:
         if rgb(c['bar'])!=hx(exp): bad.append((c['name'],cat,'左色條 %s ≠ %s'%(c['bar'],exp)))
         if rgb(c['bg'])!=mix(exp,'#ffffff',0.88):

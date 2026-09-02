@@ -1,3 +1,4 @@
+import os
 from playwright.sync_api import sync_playwright
 import sys, glob, os
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -61,8 +62,14 @@ JS = """
   return bad;
 }
 """
+FAKEINIT = """(() => { const fixed = new Date('2026-09-02T14:20:00+08:00').getTime(); const OD = Date;
+ function D(...a){ return a.length ? new OD(...a) : new OD(fixed); }
+ D.now = () => fixed; D.parse = OD.parse; D.UTC = OD.UTC; D.prototype = OD.prototype;
+ window.Date = D; })();""" if os.environ.get('FAKE_CLOCK') else None
 with sync_playwright() as p:
-    b=p.chromium.launch(); pg=b.new_page(viewport={"width":2100,"height":1520})
+    b=p.chromium.launch(); ctx=b.new_context(viewport={"width":2100,"height":1520}, timezone_id='Asia/Taipei')
+    (ctx.add_init_script(FAKEINIT) if FAKEINIT else None)
+    pg=ctx.new_page()
     pg.goto(URL); pg.wait_for_timeout(3500)
     for m in ("zh","en"):
         pg.click("#lang button[data-l=%s]"%m); pg.wait_for_timeout(700)

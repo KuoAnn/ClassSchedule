@@ -50,6 +50,18 @@ python3 build.py \
 | `checks/wcag.py` | 對比度（帶寬度參數，如 `375`） | 0 |
 | `checks/catcheck.py` | 卡片顏色是否符合分類色票、堂數是否與 CSV 一致 | 0 |
 
+加 `FAKE_CLOCK=1` 可把時間固定在週三 14:20，驗證「今天」與「已開始」狀態：
+
+```bash
+FAKE_CLOCK=1 python3 checks/wcag.py
+```
+
+## 無障礙
+
+通過 WCAG 2.2 AA：對比度、鍵盤操作、焦點可見、觸控目標 ≥ 24px、
+語言標記、ARIA 狀態、篩選結果朗讀、`prefers-reduced-motion`。
+細節與理由見 `AI_INSTRUCTIONS.md` 第 14 節。
+
 ## 專案結構
 
 ```

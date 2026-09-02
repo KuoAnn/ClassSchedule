@@ -1,3 +1,4 @@
+import os
 from playwright.sync_api import sync_playwright
 JS = """
 () => {
@@ -14,7 +15,18 @@ JS = """
   document.querySelectorAll('*').forEach(el=>{ if(el.closest('[data-noexport]')) return;
     if(![...el.childNodes].some(n=>n.nodeType===3&&n.textContent.trim())) return;
     const cs=getComputedStyle(el); if(cs.display==='none'||cs.visibility==='hidden') return;
-    const fg=parse(cs.color); if(!fg) return; const bg=bgOf(el);
+    const fg=parse(cs.color); if(!fg) return; let bg=bgOf(el);
+    // 累乘祖先的 opacity 與 filter:opacity()，把文字實際混向底色
+    let a=1, cur=el;
+    while(cur && cur!==document.documentElement){
+      const c2=getComputedStyle(cur);
+      a *= parseFloat(c2.opacity);
+      const m=(c2.filter||'').match(/opacity[(]([0-9.]+)[)]/);
+      if(m) a *= parseFloat(m[1]);
+      cur=cur.parentElement;
+    }
+    if(a<0.999){ const page=[244,240,233];
+      for(let i=0;i<3;i++){ fg[i]=fg[i]*a+page[i]*(1-a); bg[i]=bg[i]*a+page[i]*(1-a); } }
     const l1=L(fg),l2=L(bg); const r=(Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05);
     const fs=parseFloat(cs.fontSize), fw=parseInt(cs.fontWeight)||400;
     const need=(fs>=24||(fs>=18.66&&fw>=700))?3:4.5;
@@ -38,8 +50,14 @@ def target():
 URL = 'file://' + target()
 
 W=int([a for a in sys.argv[1:] if a.isdigit()][0]) if [a for a in sys.argv[1:] if a.isdigit()] else 2100
+FAKEINIT = """(() => { const fixed = new Date('2026-09-02T14:20:00+08:00').getTime(); const OD = Date;
+ function D(...a){ return a.length ? new OD(...a) : new OD(fixed); }
+ D.now = () => fixed; D.parse = OD.parse; D.UTC = OD.UTC; D.prototype = OD.prototype;
+ window.Date = D; })();""" if os.environ.get('FAKE_CLOCK') else None
 with sync_playwright() as p:
-    b=p.chromium.launch(); pg=b.new_page(viewport={"width":W,"height":1520})
+    b=p.chromium.launch(); ctx=b.new_context(viewport={"width":W,"height":1520}, timezone_id='Asia/Taipei')
+    (ctx.add_init_script(FAKEINIT) if FAKEINIT else None)
+    pg=ctx.new_page()
     pg.goto(URL); pg.wait_for_timeout(3500)
     for m in ("zh","en"):
         pg.click("#lang button[data-l=%s]"%m); pg.wait_for_timeout(700)
