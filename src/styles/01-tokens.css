@@ -1,4 +1,4 @@
 /* 01-tokens.css — 設計變數：色票、格線尺寸、輪播寬度 */
 :root{--page:#F4F0E9;--ink:#33302b;--ink2:#635d55;--ink3:#6e675d;
 --rule:#e3dcd1;--rule2:#cdc3b4;--lane:#c3b6a1;--band1:#fdfcfa;--band2:#f8f3eb;--band3:#f0e9de;
---gy:1200px;--gut:56px;--sheetw:2040px;--dayw:320px;--gap:12px;--peek:26px;--ngut:48px}
+--gy:1200px;--gut:56px;--sheetw:2040px;--dayw:320px;--gap:12px;--peek:26px}

@@ -29,16 +29,3 @@
   html.nv #view button{padding:5px 7px}
 }
 
-/* 長按存圖：LINE 的 WebView 擋掉 <a download>，所以把匯出的 PNG 攤在全螢幕，
-   由使用者長按叫出「儲存影像」。-webkit-touch-callout 要留著，不然長按沒選單 */
-.shot{position:fixed;top:0;right:0;bottom:0;left:0;z-index:60;background:#1b1815;
-display:flex;flex-direction:column;
-padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
-.shot-bar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
-gap:12px;padding:13px 16px;color:#fff;font-size:14px;line-height:1.5;letter-spacing:.04em}
-.shot-x{flex:0 0 34px;width:34px;height:34px;padding:0;border:0;border-radius:50%;
-background:rgba(255,255,255,.16);color:#fff;font-size:16px;line-height:1;cursor:pointer}
-.shot-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;
--webkit-overflow-scrolling:touch;padding:0 12px 16px}
-.shot img{display:block;width:100%;height:auto;border-radius:6px;
--webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}

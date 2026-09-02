@@ -167,36 +167,18 @@ window.addEventListener('scroll', function(){
   if (dockRaf) return;
   dockRaf = requestAnimationFrame(function(){ dockRaf = 0; updateDock(); });
 }, {passive: true});
+// 窄版是全緊密排列，沒有跨日對齊可言，所以這裡只剩一件事：各日的標頭等高。
+// 標頭是並排的，不齊的話每一欄的第一張卡會從不同高度開始。
+// 名字留著不改：resize、切版型、切語言三處都在呼叫它。
 function syncRows(){
   if (!document.documentElement.classList.contains('nv')) return;
-  var gut = document.getElementById('ngut');
-  var head = gut.querySelector('.ngc.head');
-  var hs = [], hd = 0;
+  var hd = 0;
   var heads = track.querySelectorAll('.dgrp > .dhd');
   Array.prototype.forEach.call(heads, function(el){
     el.style.height = 'auto';
     hd = Math.max(hd, el.getBoundingClientRect().height);
   });
   Array.prototype.forEach.call(heads, function(el){ el.style.height = hd + 'px'; });
-  Array.prototype.forEach.call(gut.querySelectorAll('.ngc[data-b]'), function(g){
-    hs.push(g.dataset.b);
-  });
-  head.style.height = hd + 'px';
-  // 對齊單位是早／午／晚三段，不是小時：段是七天共用的座標（左邊的時間軸只標段，
-  // 一定對得上），段內各日自己緊密排列，空堂不再逐時留白
-  hs.forEach(function(h){
-    var rows = track.querySelectorAll('.hrow[data-b="' + h + '"]');
-    var g = gut.querySelector('.ngc[data-b="' + h + '"]');
-    var mx = 0;
-    Array.prototype.forEach.call(rows, function(r){ r.style.height = 'auto'; });
-    g.style.height = 'auto';
-    Array.prototype.forEach.call(rows, function(r){
-      mx = Math.max(mx, r.scrollHeight);
-    });
-    mx = Math.max(mx, g.scrollHeight);
-    Array.prototype.forEach.call(rows, function(r){ r.style.height = mx + 'px'; });
-    g.style.height = mx + 'px';
-  });
 }
 function markCur(){
   Array.prototype.forEach.call(track.children, function(c, k){

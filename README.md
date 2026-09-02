@@ -46,6 +46,7 @@ python3 scripts/build.py \
 ```
 
 5. 開 `dist/*.html`，右上角可切換版型與語言、下載圖片
+   （四張 PNG 由 `scripts/shots.py` 在產檔後畫好，跟 HTML 放在同一層）
 
 ## 範本資源
 
@@ -83,6 +84,9 @@ src/icons/*.svg     內嵌圖示（版型切換、下載、翻頁、早／午／
 | 級別 | `初`／`中`／`高`，未設定不顯示（`初` 是預設級別，只進 aria-label） |
 | 異動類型／異動老師／異動日期 | 多筆用半形分號 `;` 分隔，**依位置配成一組**；`暫停` 不取用異動老師 |
 
+沒定義過的分類／國籍／語系／級別，卡片標籤只印**前兩個字**（標籤放不下整串），
+完整名稱仍在 aria-label 與色票列上。
+
 ```text
 異動類型  代課 ; 暫停        →  9/7 由 Jen 代課
 異動老師  Jen  ;                 9/28 暫停
@@ -115,7 +119,7 @@ FAKE_CLOCK=1 python3 scripts/checks/wcag.py
 ## CI
 
 `.github/workflows/build.yml`：推到 `main`（或手動 dispatch）就重新產檔、跑四項檢查
-（含 `FAKE_CLOCK` 的第二輪），並附上可直接下載的單一 HTML artifact；
+（含 `FAKE_CLOCK` 的第二輪），並附上 artifact（單一 HTML ＋ 四張下載圖）；
 發佈 Pages 是獨立的 `pages` job，Pages 出問題不會連坐產檔與檢查的結果。
 
 已發佈在 <https://kuoann.github.io/ClassSchedule/>（首頁就是最新一份課表）。
@@ -159,8 +163,8 @@ python3 scripts/build.py --liff-id 1234567890-abcdefgh
 | 問題 | 做法 |
 |---|---|
 | 原本 `viewport` 寫死 `width=2040`，手機上整張海報縮到看不清 | 預設 `width=device-width`；切到寬版時 `01-boot.js` / `05-view.js` 才換成版面寬 |
-| LINE WebView 擋掉 `<a download>`，按了沒反應 | 在 LIFF 裡改用 `liff.openWindow({external:true})` 把同一份課表（`?dl=1&v=…&l=…&cat=…`）開到系統瀏覽器下載（`09-liff.js` 的 `openExternalDownload`）；沒有 SDK 時退回把 PNG 攤成全螢幕、長按存到相簿（`saveImage`） |
-| 手機 canvas 上限比桌機低，寬版匯出會整個失敗 | `08-export.js` 依版面面積把 scale 壓到 12M 畫素以內（桌機仍是 scale 2） |
+| LINE WebView 擋掉 `<a download>` 與 blob，按了沒反應 | 圖改成 build 時預製四張（`scripts/shots.py`），按下載＝導到圖片的固定網址；在 LIFF 裡用 `liff.openWindow({external:true})` 開到系統瀏覽器（`09-liff.js` 的 `openExternalDownload`），長按即可存到相簿 |
+| 手機 canvas 上限比桌機低，前端現畫會整個失敗 | 不再用 html2canvas 現畫，改成 build 時用 playwright 畫（也順便少載一支 CDN 套件） |
 | iOS 把「11:00–12:00」判成電話號碼 | `<meta name="format-detection" content="telephone=no,date=no,address=no">` |
 | 瀏海／home indicator 蓋住工具列與底部 | `viewport-fit=cover` ＋ `env(safe-area-inset-*)`（`13-liff.css`） |
 | 輪播滑到底把手勢傳給外層，變成關掉 LIFF | `.ntrack{overscroll-behavior-x:contain}` |
@@ -195,6 +199,6 @@ CLAUDE.md             Claude 轉址入口
 **改任何東西之前請先讀 [`AGENTS.md`](AGENTS.md)。**
 `CLAUDE.md` 只是轉址入口，不再有單獨的規格來源。
 裡面每一條規格都有原因，包含踩過的坑（語言切換的選擇器陷阱、
-sticky 在 html2canvas 下的定位問題、難度標籤壓到時間的成因等）。
+sticky 在匯出時的定位問題、難度標籤壓到時間的成因等）。
 
 不要改 `dist/` 裡的 HTML — 那是產物，下次產檔會被覆蓋。

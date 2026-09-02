@@ -5,9 +5,10 @@
 免得分類色票在兩邊各寫一份、加一個新分類時漏改一邊。
 
 **加新東西只要改這個檔**，而且沒改到也不會壞：
-沒定義過的分類會自動配一個色（`auto_color`），沒定義過的國籍／語系／級別
-一律照抄原文顯示。兩種情形都會由 `build.py` 印出 WARN，
-提醒把正式的譯名與色票補進來 —— 讓課表先出得去，不是讓它悄悄出錯。
+沒定義過的分類會自動配一個色（`auto_color`），沒定義過的分類／國籍／語系／級別
+標籤一律取前兩個字（`short_tag`），全名仍留在 aria-label 與色票列上。
+兩種情形都會由 `build.py` 印出 WARN，提醒把正式的譯名與色票補進來 ——
+讓課表先出得去，不是讓它悄悄出錯。
 """
 import colorsys
 import hashlib
@@ -47,6 +48,16 @@ CATS = {
 }
 
 
+def short_tag(v):
+    """判斷不出來時的標籤文字：只取前兩個字。
+
+    標籤的空間很小（窄版卡片只有 142px、寬版並排時更窄），未定義的值整串印
+    會把卡片撐爆或被裁掉。前兩個字足以辨識是哪一個，完整的名稱仍然留在
+    aria-label 與色票列的說明裡，資訊不會消失。
+    """
+    return (v[:2], v[:2])
+
+
 def auto_color(name):
     """沒定義過的分類：由名字算出一個固定的色相。
 
@@ -76,7 +87,7 @@ def cat(raw):
         out["name"] = name
         out["known"] = True
         return out
-    return dict(name=name, color=auto_color(name), en=name, short=(name, name),
+    return dict(name=name, color=auto_color(name), en=name, short=short_tag(name),
                 tag=True, note=("", ""), known=False)
 
 
@@ -114,7 +125,7 @@ def nation(v):
     d = NATIONS.get(v)
     if d:
         return dict(d, value=v, known=True)
-    return dict(value=v, tag=(v, v), full=(v + "籍", v), known=False)
+    return dict(value=v, tag=short_tag(v), full=(v + "籍", v), known=False)
 
 
 def language(v):
@@ -124,7 +135,8 @@ def language(v):
     d = LANGS.get(v)
     if d:
         return dict(d, value=v, known=True)
-    return dict(value=v, tag=(v, v), full=(v + "授課", "taught in " + v), known=False)
+    return dict(value=v, tag=short_tag(v), full=(v + "授課", "taught in " + v),
+                known=False)
 
 
 # ---------- 級別 ----------
@@ -150,7 +162,7 @@ def level(v):
         out = dict(d, value=v, known=True)
         out.setdefault("style", LEVEL_STYLE)
         return out
-    return dict(value=v, full=(v, v), tag=(v, v), style=LEVEL_STYLE, known=False)
+    return dict(value=v, full=(v, v), tag=short_tag(v), style=LEVEL_STYLE, known=False)
 
 
 # ---------- 課名 ----------

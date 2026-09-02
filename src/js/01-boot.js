@@ -46,8 +46,7 @@ window.addEventListener('orientationchange', remeasureViewport);
 window.addEventListener('resize', function(){
   if (document.documentElement.classList.contains('nv')) DEVW = document.documentElement.clientWidth || DEVW;
 });
-// 網址參數用小工具：LINE 裡的下載會把狀態帶到外部瀏覽器（?dl=1&v=…&l=…&cat=…），
-// 這支在繪製前就要讀得到 v，所以放在 01-boot.js 而不是 09-liff.js
+// 網址參數用小工具：?v=n 這種分享連結要在繪製前就決定版型，所以放在 01-boot.js
 function qparam(k){
   var m = new RegExp('[?&]' + k + '=([^&]*)').exec(location.search || '');
   return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : '';

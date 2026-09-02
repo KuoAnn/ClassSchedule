@@ -20,6 +20,8 @@ export PYTHONIOENCODING=utf-8
 export PYTHONUTF8=1
 
 "$PY" scripts/build.py "$@"
+# 四張下載圖（寬／窄 × 中／英）是 build 完才畫的，檔名讀 HTML 裡的 window.SCHEDULE
+echo "--- 產下載圖 ---"; "$PY" scripts/shots.py
 echo "--- 遮蔽檢查 ---";   "$PY" scripts/checks/occl.py
 echo "--- 對比度 寬版 ---"; "$PY" scripts/checks/wcag.py
 echo "--- 對比度 窄版 ---"; "$PY" scripts/checks/wcag.py 375

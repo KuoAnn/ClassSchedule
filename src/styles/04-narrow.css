@@ -1,16 +1,15 @@
-/* 04-narrow.css — 窄版輪播骨架：時間欄、軌道、釘在上方的星期 */
+/* 04-narrow.css — 窄版輪播骨架：軌道、卡片分組、釘在上方的星期 */
 .nlist{margin:2px -14px 0 0;display:flex;align-items:flex-start}
 /* 釘在上方的星期：它取代的是各日面板的標頭（.ntrack.pinned .dhd 被藏起來），
-   所以幾何要跟輪播一模一樣 —— 左邊讓開時間欄的寬度（.ndockgut），每一格 --dayw、
-   間距 --gap，整條 .ndockin 再用 translateX(-scrollLeft) 跟著輪播走。
+   所以幾何要跟輪播一模一樣 —— 每一格 --dayw、間距 --gap，整條 .ndockin 再用
+   translateX(-scrollLeft) 跟著輪播走。
    早期版本是「七天平分整個寬度」，一天只看得到一格時看不出問題，但現在一次看得到
    兩三天，星期就會落在別的日子的欄位上（釘住的瞬間整排跳位）。
-   .ndock 自己要塗滿背景（含時間欄那一段），否則下面的卡片會透出來；
-   裁切要放在 .ndockclip 上，overflow 是裁到 padding box、裁不掉自己的 padding。 */
+   .ndock 自己要塗滿背景，否則下面的卡片會透出來；裁切放在 .ndockclip 上，
+   不是 .ndock 上：overflow 是裁到 padding box、裁不掉自己的 padding。 */
 .ndock{display:none;position:sticky;top:var(--dockH,92px);z-index:24;
 margin-right:-14px;background:var(--page);border-bottom:1px solid var(--rule)}
 .ndock.show{display:flex}
-.ndockgut{flex:0 0 var(--ngut)}
 .ndockclip{flex:1;min-width:0;overflow:hidden}
 .ndockin{display:flex;align-items:stretch;gap:var(--gap)}
 .ndockin .dk{flex:0 0 var(--dayw);min-width:0;text-align:center;white-space:nowrap;
@@ -20,23 +19,13 @@ color:var(--ink3);border-bottom:2px solid transparent;margin-bottom:-1px}
 .ndockin .dk.on{color:var(--ink);font-weight:700;border-bottom-color:var(--lane)}
 .ndockin .dk.on.today{border-bottom-color:#a89670}
 .ntrack.pinned .dhd{visibility:hidden}
-.ngut{flex:0 0 var(--ngut);position:relative;z-index:3;background:var(--page)}
-/* 時間軸只標早／午／晚：段是七天共用的對齊單位，段內各日自己緊密排列，
-   所以標到「小時」就會指錯卡片，標到「段」永遠是對的。
-   標籤釘在段的頂端（sticky），段很高時捲到一半也還看得到自己在哪一段 */
-.ngc{border-top:1px solid var(--rule);padding-top:6px;color:var(--ink3);
-box-sizing:border-box;overflow:hidden}
-.ngc.head{border-top:0}
-.ngc .gb{position:sticky;top:var(--dockH,92px);display:flex;flex-direction:column;
-align-items:center;gap:2px;color:#786a56;font-size:12.5px;letter-spacing:.08em;
-font-weight:500}
-.ngc .gb .ic{width:14px;height:14px;flex:0 0 14px;display:block}
 .ncar{position:relative;flex:1;min-width:0}
 .ncar::before,.ncar::after{content:"";position:absolute;top:0;bottom:0;
 pointer-events:none;z-index:2}
 .ncar::before{left:0;width:var(--fadeL,0px);background:linear-gradient(to right,var(--page) 14%,rgba(244,240,233,0))}
 .ncar::after{right:0;width:var(--fadeR,0px);background:linear-gradient(to left,var(--page) 14%,rgba(244,240,233,0))}
-.hrow{border-top:1px solid var(--rule);padding-top:5px;box-sizing:border-box;overflow:hidden}
+/* .hrow 只是早／午／晚的分組容器：沒有跨日對齊，也就沒有邊線與固定高度可言 */
+.hrow{box-sizing:border-box}
 /* overscroll-behavior-x:contain — 輪播滑到頭時不要把手勢傳給外層，
    在 LINE 內建瀏覽器裡那會變成「往回上一頁／關掉 LIFF」 */
 .ntrack{display:flex;align-items:flex-start;gap:var(--gap);

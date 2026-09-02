@@ -42,6 +42,11 @@ jobs:
           LIFF_ID: ${{ vars.LIFF_ID }}
         run: python scripts/build.py
 
+      # 四張下載圖（寬／窄 × 中／英）。用 playwright 真的開一次頁面畫，
+      # 所以要排在產檔之後、發佈之前；前端不再有 html2canvas
+      - name: 產下載圖
+        run: python scripts/shots.py
+
       - name: 遮蔽檢查
         run: python scripts/checks/occl.py
 
@@ -64,11 +69,15 @@ jobs:
       - name: 首頁指向最新課表
         run: cp "$(ls -t dist/*.html | head -n 1)" dist/index.html
 
-      - name: 保留產物（可直接下載單一 HTML）
+      # HTML 與四張 PNG 一起帶走：PNG 是「下載課表圖片」按鈕實際導過去的檔案，
+      # 少了它們 Pages 上按下載就是 404
+      - name: 保留產物（單一 HTML ＋ 四張下載圖）
         uses: actions/upload-artifact@v4
         with:
-          name: schedule-html
-          path: dist/*.html
+          name: schedule-site
+          path: |
+            dist/*.html
+            dist/*.png
           if-no-files-found: error
 
   # 發佈獨立成一個 job：Pages 沒開或沒權限時，上面的產檔與四項檢查結果不會被連坐
@@ -83,7 +92,7 @@ jobs:
       - name: 取回 build 產物
         uses: actions/download-artifact@v4
         with:
-          name: schedule-html
+          name: schedule-site
           path: dist
 
       # Pages 必須先在 repo 上啟用一次，否則這步會死在

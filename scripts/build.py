@@ -588,23 +588,17 @@ for day in S:
 a('</div></div></div>')
 a('</div>')
 
-# ---------- 窄版：以早／午／晚三段跨日對齊，段內各日自己緊密排列 ----------
-# 對齊單位是「段」不是「小時」。逐時對齊會在空堂處留下大片留白（週一 2900px），
-# 完全不對齊又會讓左邊那條七天共用的時間軸標錯時段 —— 用段當單位剛好兩者兼顧：
-# 段是七天共用的座標（時間軸只標早／午／晚，一定對得上），段內誰有幾堂互不影響。
-# 段內不再有空的小時列，所以卡片是連續往下排的。
+# ---------- 窄版：一天一串，全部緊密排列 ----------
+# 沒有左側時間軸、也沒有跨日對齊。試過逐時對齊（空堂留下大片留白，週一 2900px）
+# 與早／午／晚三段對齊（2299px），最後選最緊的這一版：每張卡自己都印著時段，
+# 一天一串往下滑本來就不需要共用座標，而共用座標一定要留白才對得起來。
+# 段（NBANDS）仍拿來當分組容器：空的整段收掉，卡片就連續往下排。
 NBANDS = [(bs, be, lb) for bs, be, lb in BANDS
           if any(bs <= mn(x["s"]) < be for day in S for x in day)]
 
 a('<div class="ndock narrowonly" id="ndock" data-noexport="1" aria-hidden="true">'
-  '<div class="ndockgut"></div>'
   '<div class="ndockclip"><div class="ndockin" id="ndockin"></div></div></div>')
 a('<div class="nlist narrowonly">')
-a('<div class="ngut" id="ngut"><div class="ngc head"></div>')
-for bs, be, lb in NBANDS:
-    a('<div class="ngc" data-b="%s"><span class="gb">%s%s</span></div>'
-      % (EN_BAND[lb], ICON[lb], bi(lb, EN_BAND[lb])))
-a('</div>')
 a('<div class="ncar"><div class="ntrack" id="ntrack">')
 for di, day in enumerate(S):
     a('<section class="dgrp" data-day="%d"><h3 class="dhd">'
@@ -640,9 +634,13 @@ STYLES = "\n".join([
 ])
 SCRIPTS = "\n".join([
     "// 由 build.py 依這份課表產生（08-export.js 讀 window.SCHEDULE，09-liff.js 讀 window.LIFF_ID）",
-    'window.SCHEDULE = {png: {zh: "%s", en: "%s"}};' % (
+    "// 四張圖由 scripts/shots.py 在 build 之後畫進 dist/，檔名以這裡為準",
+    'window.SCHEDULE = {png: {w: {zh: "%s", en: "%s"}, n: {zh: "%s", en: "%s"}}};' % (
         "%s-%d月課表.png" % (BRANCH, MONTH),
-        "%s-%s-schedule.png" % (EN_BRANCH.replace(" ", "-"), EN_MONTH[MONTH - 1])),
+        "%s-%s-schedule.png" % (EN_BRANCH.replace(" ", "-"), EN_MONTH[MONTH - 1]),
+        "%s-%d月課表-直式.png" % (BRANCH, MONTH),
+        "%s-%s-schedule-vertical.png" % (EN_BRANCH.replace(" ", "-"),
+                                         EN_MONTH[MONTH - 1])),
     'window.LIFF_ID = "%s";' % _a.liff_id.replace('"', ""),
     bundle("js", skip=("01-boot.js",)),
 ])
