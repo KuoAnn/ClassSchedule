@@ -15,6 +15,10 @@ if [ -z "$PY" ]; then
   exit 1
 fi
 
+# 課名、WARN、檢查結果都是中文；Windows 主控台預設 cp950 會印成亂碼
+export PYTHONIOENCODING=utf-8
+export PYTHONUTF8=1
+
 "$PY" scripts/build.py "$@"
 echo "--- 遮蔽檢查 ---";   "$PY" scripts/checks/occl.py
 echo "--- 對比度 寬版 ---"; "$PY" scripts/checks/wcag.py
