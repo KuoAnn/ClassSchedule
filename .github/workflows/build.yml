@@ -1,0 +1,83 @@
+name: build
+
+# 推到 main 就重新產檔、跑四項檢查，通過後發佈到 GitHub Pages
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時只跑一個發佈，後推的蓋掉前一個
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: 安裝套件
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: 產檔
+        run: python scripts/build.py
+
+      - name: 遮蔽檢查
+        run: python scripts/checks/occl.py
+
+      - name: 對比度 寬版
+        run: python scripts/checks/wcag.py
+
+      - name: 對比度 窄版
+        run: python scripts/checks/wcag.py 375
+
+      - name: 色票對應
+        run: python scripts/checks/catcheck.py
+
+      - name: 固定時間再跑一次（驗「今天」與「已結束」狀態）
+        env:
+          FAKE_CLOCK: "1"
+        run: |
+          python scripts/checks/occl.py
+          python scripts/checks/wcag.py 375
+
+      - name: 首頁指向最新課表
+        run: cp "$(ls -t dist/*.html | head -n 1)" dist/index.html
+
+      - name: 保留產物（可直接下載單一 HTML）
+        uses: actions/upload-artifact@v4
+        with:
+          name: schedule-html
+          path: dist/*.html
+          if-no-files-found: error
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
