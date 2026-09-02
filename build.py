@@ -681,14 +681,17 @@ font-size:13px;color:var(--ink2);padding:5px 14px;border-radius:16px;cursor:poin
 letter-spacing:.06em;margin-left:4px}
 .clear:hover{background:#faf7f1}
 .keys.on .clear{display:inline-block}
-.ev.past,.lc.past{background:#eceae5!important;border-color:#d6d1c8!important;
-border-left-color:#c2bcb1!important}
-.ev.past .n,.lc.past .n{color:#46423c!important}
-.ev.past .cg,.ev.past .lv,.lc.past .cg,.lc.past .lv{background:#e4e0d8!important;color:#5c5852!important}
-.done{display:inline-block;font-weight:500;font-size:11px;line-height:1.4;
-border-radius:4px;padding:1px 6px;letter-spacing:.02em;color:#5c5852;background:#e4e0d8}
-.ev.nar .done,.lc .done{font-size:10px}
-.sheet.nopast .past{background:inherit!important}
+/* 已結束：整張卡淡化（此處刻意不套 WCAG 對比要求，見 AI_INSTRUCTIONS §14） */
+.ev.st-done,.lc.st-done{filter:opacity(.4)}
+/* 進行中：外圈提示，不動邊框樣式 */
+.ev.st-live,.lc.st-live{box-shadow:0 0 0 2px #4c6636}
+.stt{display:inline-block;font-weight:500;font-size:11px;line-height:1.4;
+border-radius:4px;padding:1px 6px;letter-spacing:.02em}
+.st-done .stt{color:#5c5852;background:#e4e0d8}
+.st-live .stt{color:#2f5e37;background:#d7e7d9}
+.ev.nar .stt,.lc .stt{font-size:10px}
+.sheet.nopast .st-done{filter:none}
+.sheet.nopast .st-live{box-shadow:none}
 .sheet.on .ev,.sheet.on .lc{opacity:.14}
 .sheet.on .ev.match,.sheet.on .lc.match{opacity:1}
 .key u{text-decoration:none;color:var(--ink3);font-size:13px;margin-left:5px}
@@ -852,8 +855,8 @@ for day in S:
         hh = ypos(mn(it["e"])) - ypos(mn(it["s"])) - 4
         cls = ("ev" + (" nar" if n > 1 else "")
                + (" hi" if p["hi"] else "") + (" lvd" if it["lv"] in EN_LV else ""))
-        a('<div class="%s" role="group" aria-label="%s" data-lab-en="%s" data-cat="%s" data-base="%s" data-start="%d" style="top:%.1fpx;height:%.1fpx;left:calc(%.4f%% + 3px);width:calc(%.4f%% - 6px);background:%s;border-color:%s;border-left-color:%s">'
-          % (cls, p["labz"], p["labe"], esc(it["c"]), p["base"], mn(it["s"]),
+        a('<div class="%s" role="group" aria-label="%s" data-lab-en="%s" data-cat="%s" data-base="%s" data-start="%d" data-end="%d" style="top:%.1fpx;height:%.1fpx;left:calc(%.4f%% + 3px);width:calc(%.4f%% - 6px);background:%s;border-color:%s;border-left-color:%s">'
+          % (cls, p["labz"], p["labe"], esc(it["c"]), p["base"], mn(it["s"]), mn(it["e"]),
              top, hh, ci * 100.0 / n, 100.0 / n,
              p["cardbg"], p["edge"], p["base"]))
         a('<div class="tp"><div class="nr">%s%s</div>%s%s</div>'
@@ -893,8 +896,8 @@ for di, day in enumerate(S):
         a('<div class="hrow%s" data-h="%d">' % ("" if g else " empty", h))
         for it in g:
             p = card_parts(it)
-            a('<article class="lc%s" aria-label="%s" data-lab-en="%s" data-cat="%s" data-start="%d" style="background:%s;border-color:%s;border-left-color:%s">'
-              % (" hi" if p["hi"] else "", p["labz"], p["labe"], esc(it["c"]), mn(it["s"]),
+            a('<article class="lc%s" aria-label="%s" data-lab-en="%s" data-cat="%s" data-start="%d" data-end="%d" style="background:%s;border-color:%s;border-left-color:%s">'
+              % (" hi" if p["hi"] else "", p["labz"], p["labe"], esc(it["c"]), mn(it["s"]), mn(it["e"]),
                  p["cardbg"], p["edge"], p["base"]))
             a('<div class="nr">%s%s</div>%s%s' % (p["name"], p["lv"], p["time"], p["who"]))
             a('<div class="bt">%s%s</div>' % (p["note"], p["cg"]))
@@ -934,21 +937,37 @@ function fitCells(){
     el.classList.add('today');
   });
 })();
-var DONE = {zh: '已開始', en: 'Started'};
+// 當天課程三種狀態：已結束（反灰淡化）／進行中（標籤＋外圈）／待開課（不標）
+var STATE = {
+  done: {zh: '已結束', en: 'Ended'},
+  live: {zh: '進行中', en: 'In progress'}
+};
 function markPast(){
   var d = new Date(), td = (d.getDay() + 6) % 7, now = d.getHours() * 60 + d.getMinutes();
   document.querySelectorAll('.ev,.lc').forEach(function(el){
     var host = el.closest('[data-day]');
-    var p = !!host && +host.dataset.day === td && +el.dataset.start < now;
-    el.classList.toggle('past', p);
-    var bt = el.querySelector('.bt'), chip = el.querySelector('.done');
-    if (p && bt && !chip) {
-      chip = document.createElement('span');
-      chip.className = 'done';
-      chip.innerHTML = '<span class="zh" lang="zh-Hant">' + DONE.zh +
-                       '</span><span class="en" lang="en">' + DONE.en + '</span>';
-      bt.insertBefore(chip, bt.firstChild);
-    } else if (!p && chip) {
+    var today = !!host && +host.dataset.day === td;
+    var st = +el.dataset.start, en = +el.dataset.end;
+    var state = '';
+    if (today) {
+      if (now >= en) state = 'done';
+      else if (now >= st) state = 'live';
+    }
+    el.classList.toggle('st-done', state === 'done');
+    el.classList.toggle('st-live', state === 'live');
+    var bt = el.querySelector('.bt'), chip = el.querySelector('.stt');
+    if (state && bt) {
+      if (!chip) {
+        chip = document.createElement('span');
+        chip.className = 'stt';
+        bt.insertBefore(chip, bt.firstChild);
+      }
+      if (chip.dataset.s !== state) {
+        chip.dataset.s = state;
+        chip.innerHTML = '<span class="zh" lang="zh-Hant">' + STATE[state].zh +
+                         '</span><span class="en" lang="en">' + STATE[state].en + '</span>';
+      }
+    } else if (chip) {
       chip.remove();
     }
   });
@@ -1246,8 +1265,10 @@ document.getElementById('dl').addEventListener('click', function(){
     fitCells();
     var nar = document.documentElement.classList.contains('nv');
     sheet.classList.add('nopast','flat','noto');
-    document.querySelectorAll('.done').forEach(function(c){ c.remove(); });
-    document.querySelectorAll('.past').forEach(function(c){ c.classList.remove('past'); });
+    document.querySelectorAll('.stt').forEach(function(c){ c.remove(); });
+    document.querySelectorAll('.st-done,.st-live').forEach(function(c){
+      c.classList.remove('st-done','st-live');
+    });
     if (nar && !track.classList.contains('full')) sheet.classList.add('weekexp');
     hide.forEach(function(el){el.style.visibility='hidden'});
     return html2canvas(sheet,{scale:2,backgroundColor:'#F4F0E9',useCORS:true,

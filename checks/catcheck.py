@@ -47,7 +47,6 @@ with sync_playwright() as p:
       const cs=getComputedStyle(e); const cg=e.querySelector('.cg');
       return {cat:e.dataset.cat, base:e.dataset.base, off:e.classList.contains('off'),
               kind:e.classList.contains('lc')?'lc':'ev',
-              past:e.classList.contains('past'),
               bar:cs.borderLeftColor, bg:cs.backgroundColor,
               chip:cg?getComputedStyle(cg).backgroundColor:null,
               name:e.querySelector('.n').innerText.trim()};})""")
@@ -60,13 +59,7 @@ for c in cards:
     exp=PALETTE.get(cat)
     if exp is None: bad.append((c['name'],cat,'分類無色票')); continue
     if c['base'] and c['base'].upper()!=exp.upper(): bad.append((c['name'],cat,'data-base 不符 %s'%c['base']))
-    if c['past']:
-        # 已開始：刻意轉為中性灰（不降低文字對比），驗證是否為約定色
-        if rgb(c['bar'])!=hx('#c2bcb1'): bad.append((c['name'],cat,'已開始卡左色條 %s'%c['bar']))
-        if rgb(c['bg'])!=hx('#eceae5'): bad.append((c['name'],cat,'已開始卡底色 %s'%c['bg']))
-        if cat not in NO_CAT_TAG and c['chip'] and rgb(c['chip'])!=hx('#e4e0d8'):
-            bad.append((c['name'],cat,'已開始卡標籤底色 %s'%c['chip']))
-    else:
+    if True:
         if rgb(c['bar'])!=hx(exp): bad.append((c['name'],cat,'左色條 %s ≠ %s'%(c['bar'],exp)))
         if rgb(c['bg'])!=mix(exp,'#ffffff',0.88):
             bad.append((c['name'],cat,'底色 %s'%c['bg']))

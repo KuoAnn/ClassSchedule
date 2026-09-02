@@ -12,7 +12,10 @@ JS = """
       if(a>0) stack.push([[m[0],m[1],m[2]],a]); if(a>=1) break; cur=cur.parentElement; }
     let res=[255,255,255]; for(let i=stack.length-1;i>=0;i--) res=over(stack[i][0],res,stack[i][1]); return res; }
   const out=[];
+  let skipped = 0;
   document.querySelectorAll('*').forEach(el=>{ if(el.closest('[data-noexport]')) return;
+    // 已結束的課刻意淡化，依需求不套 WCAG 對比要求
+    if(el.closest('.st-done')){ skipped++; return; }
     if(![...el.childNodes].some(n=>n.nodeType===3&&n.textContent.trim())) return;
     const cs=getComputedStyle(el); if(cs.display==='none'||cs.visibility==='hidden') return;
     const fg=parse(cs.color); if(!fg) return; let bg=bgOf(el);
@@ -33,7 +36,7 @@ JS = """
     if(r<need) out.push({cls:el.className.toString().slice(0,24),fs,r:+r.toFixed(2),need}); });
   const seen=new Set(), u=[];
   out.forEach(o=>{const k=o.cls+o.fs+o.r; if(!seen.has(k)){seen.add(k);u.push(o)}});
-  return {n:out.length, u};
+  return {n:out.length, u, skipped};
 }
 """
 import sys
@@ -61,6 +64,6 @@ with sync_playwright() as p:
     pg.goto(URL); pg.wait_for_timeout(3500)
     for m in ("zh","en"):
         pg.click("#lang button[data-l=%s]"%m); pg.wait_for_timeout(700)
-        r=pg.evaluate(JS); print(m, "WCAG 不合格:", r["n"])
+        r=pg.evaluate(JS); print(m, "WCAG 不合格:", r["n"], "（已結束卡片豁免 %d 個節點）" % r["skipped"])
         for o in r["u"][:10]: print("   ", o)
     b.close()
