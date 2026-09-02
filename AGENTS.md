@@ -108,21 +108,27 @@ HTML 本身要維持「一個檔就能看」—— 有人只把那份 HTML 存�
 **本站是純靜態課表、不讀任何會員資料**，因此不呼叫 `liff.login()` / `liff.getProfile()`，
 也不設 `withLoginOnExternalBrowser` — 一般瀏覽器開同一個網址不會被導去登入。
 
-1. **viewport 是動態的，而且寬版要自己算縮放比例。**
-   `src/index.html` 預設 `width=device-width,initial-scale=1,viewport-fit=cover`；
-   寬版是固定寬的海報版面，切過去時由 `setViewport()`（定義在 `01-boot.js`，
-   `05-view.js` 也會呼叫）改成 `width=<--sheetw>`。版面寬是從 CSS 變數 `--sheetw` 讀的，
-   不是 build 寫死的字串，所以「build 期的值不寫死在資源檔裡」這條仍然成立。
-   兩個坑（**都踩過**，不要「簡化」回去）：
-   - **縮放比例要明寫成 `initial-scale`，不能只靠瀏覽器 auto-shrink。**
-     LINE 的 WebView 對「載入後才改的 viewport」常常只吃寬度、不重算縮放，
-     結果寬版超出螢幕、字擠成一團還要橫向拖。比例 = 裝置寬 ÷ `--sheetw`。
-   - **裝置寬要在繪製前先量下來（`DEVW`）。** 換成 `width=2040` 之後
-     `clientWidth` 量到的是版面寬、不是螢幕寬，那時候就來不及了。
-     轉向會讓裝置寬變掉，`remeasureViewport()` 因此先退回 `device-width` 量一次
-     再把寬版套回去。量不到（`DEVW` 為 0）才退回舊行為：不給 `initial-scale`。
-   - **改 viewport 是整顆 `<meta>` 換掉，不是改 `content` 屬性。**
-     WebView 對屬性變更有時直接不重新套用版面。
+1. **viewport 只有一份，寬版不縮頁：原尺寸＋橫向捲動。**
+   `src/index.html` 從頭到尾都是 `width=device-width,initial-scale=1,viewport-fit=cover`，
+   兩種版型共用，JS 不再動 `<meta>`。寬版仍然是 `--sheetw`（2040px）寬的海報，
+   螢幕塞不下就讓整份文件橫向捲動，字級維持原尺寸。
+   **這是刻意換掉「整頁縮到裝置寬」的**（`setViewport()`／`DEVW`／`remeasureViewport()`
+   連同 `01-boot.js` 裡那段算 `initial-scale` 的程式都刪了），因為那條路有兩個致命傷：
+   - **縮完根本讀不到。** 2040px 的海報縮到 390px 裝置寬是 0.19 倍，
+     16px 的課名只剩 3px、10.5px 的標籤剩 2px。「一眼看完整張」換來的是一張看不懂的圖。
+   - **viewport 變成 2040 之後所有 RWD 都失效。** `@media (max-width:900px/560px)`
+     跟 `13-liff.css` 的 `(max-width:430px)` 量的是 viewport 寬，不是螢幕寬 ——
+     手機上寬版的標題列、按鈕、色票列全部照桌機尺寸出，等於寬版整個沒有 RWD。
+     這也是原本的回報：「寬版模式下需 RWD」。
+   想看全貌的人雙指縮小就是以前的樣子 —— 沒有設 `maximum-scale`／`user-scalable=no`，
+   **也不要補**：那會把「縮出去看全貌」與「放大看細節」同時擋掉。
+   - 一進寬版停在最左邊等於停在星期一，所以 `showToday()`（`05-view.js`）在
+     **真的有橫向溢出時**才把 `.col.today` 那一欄捲進畫面（桌機放得下整張就不動），
+     而且只改水平位置：垂直位置是使用者當下在看的地方。
+   - 寬版的卡片是 `left/width` 用 % 算的、`.wrap` 寬度綁 `--sheetw`，所以
+     **不管裝置多寬，卡片幾何都一樣** —— `occl.py` 在 2100px 量到的結果仍然代表手機。
+     反過來說，不要為了手機把 `--sheetw` 改小：那會讓欄寬縮水、卡片重新換行，
+     而檢查是在 2100px 跑的，抓不到那種溢出。
 2. **`html` 的 class 只能用 `classList` 動，不可以直接指派 `className`。**
    `01-boot.js` 在繪製前掛上的 `.liff`（UA 含 `" Line/"`）會被整串覆蓋掉，
    `inLINE()` 就會回 false，「把圖丟給外部瀏覽器」那條路就失效。這個坑踩過一次。

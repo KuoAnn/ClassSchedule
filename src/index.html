@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <title>{{title}}</title>
-<!-- 窄版跟著裝置寬度（LIFF 一律是手機）；切到寬版時由 01-boot.js／05-view.js 改成版面寬 -->
+<!-- 兩種版型共用：都跟著裝置寬。寬版是 --sheetw 寬的海報，字級維持原尺寸、橫向捲動看，
+     不再整頁縮到裝置寬（縮完 16px 的課名只剩 3px，且 @media 全部失效）。見 AGENTS.md -->
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <!-- 整頁都是「11:00–12:00」這種字串，不讓 iOS／LINE 自作主張判成電話或日期 -->
 <meta name="format-detection" content="telephone=no,date=no,address=no">
