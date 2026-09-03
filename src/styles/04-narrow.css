@@ -33,9 +33,6 @@ overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scrol
 -webkit-overflow-scrolling:touch;cursor:grab}
 .ntrack::-webkit-scrollbar{display:none}
 .ntrack.drag{cursor:grabbing;scroll-snap-type:none}
-/* 一次看得到兩天以上時改成靠左吸附（蓋掉 06-narrow-card.css 的 center）：
-   置中會把兩側的日子各切一半，反而一天都看不完整 */
-.ntrack.multi .dgrp{scroll-snap-align:start}
 .ntrack.full{padding-left:0;overflow-x:hidden;scroll-snap-type:none;cursor:default;
 justify-content:center}
 .ntrack.full .dgrp.clone{display:none}

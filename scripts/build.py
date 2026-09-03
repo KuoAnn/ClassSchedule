@@ -632,6 +632,11 @@ STYLES = "\n".join([
     "/* 由 build.py 依這份課表算出的尺寸，覆寫 01-tokens.css 的預設值 */",
     ":root{--gy:%.0fpx;--gut:%dpx;--sheetw:%dpx}" % (GH, GUT, SHEET_W),
 ])
+_axis = []
+for a_, b_, _k, _h in SEGS:
+    _axis.append({"m": a_, "y": round(ypos(a_), 1)})
+_axis.append({"m": T1, "y": round(ypos(T1), 1)})
+AXIS = json.dumps(_axis, ensure_ascii=False, separators=(",", ":"))
 SCRIPTS = "\n".join([
     "// 由 build.py 依這份課表產生（08-export.js 讀 window.SCHEDULE，09-liff.js 讀 window.LIFF_ID）",
     "// 四張圖由 scripts/shots.py 在 build 之後畫進 dist/，檔名以這裡為準",
@@ -640,12 +645,12 @@ SCRIPTS = "\n".join([
     # stamp 是「內容換了沒」的記號，只給下載鈕當快取破壞用（Pages 是 max-age=600），
     # 分享用的網址仍然是乾淨的固定網址。
     'window.SCHEDULE = {png: {w: {zh: "%s", en: "%s"}, n: {zh: "%s", en: "%s"}},'
-    ' stamp: "%d-%s"};' % (
+    ' stamp: "%d-%s", axis: %s};' % (
         "%s-課表.png" % BRANCH,
         "%s-schedule.png" % EN_BRANCH.replace(" ", "-"),
         "%s-課表-直式.png" % BRANCH,
         "%s-schedule-vertical.png" % EN_BRANCH.replace(" ", "-"),
-        MONTH, VERSION),
+        MONTH, VERSION, AXIS),
     'window.LIFF_ID = "%s";' % _a.liff_id.replace('"', ""),
     bundle("js", skip=("01-boot.js",)),
 ])

@@ -4,6 +4,7 @@
 .sheet.flat .hcorner{position:static}
 .sheet.flat .gut{position:relative}
 .sheet.flat .ndock{display:none}
+.sheet.flat .nowline{display:none!important}
 /* 匯出的單日寬釘成 170px：跟畫面上算出來的差不多（手機實測 143～172px），
    所以卡片的比例與換行都跟畫面一致 —— 釘成 320px 的那一版把七欄拉得很寬，
    卡片右半邊全是空白，跟畫面上緊湊的窄欄完全不像。
