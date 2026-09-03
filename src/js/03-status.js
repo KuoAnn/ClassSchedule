@@ -13,14 +13,16 @@ var STATE = {
 function axisY(min){
   var ax = window.SCHEDULE && window.SCHEDULE.axis;
   if (!ax || !ax.length) return null;
-  if (min < ax[0].m || min > ax[ax.length - 1].m) return null;
+  var last = ax[ax.length - 1];
+  if (min === last.m) return last.y;
+  if (min < ax[0].m || min > last.m) return null;
   for (var i = 1; i < ax.length; i++) {
     var a = ax[i - 1], b = ax[i];
     if (min > b.m) continue;
     if (b.m === a.m) return b.y;
     return a.y + (min - a.m) * (b.y - a.y) / (b.m - a.m);
   }
-  return ax[ax.length - 1].y;
+  return null;
 }
 function updateNowLine(td, now){
   var root = document.documentElement;
