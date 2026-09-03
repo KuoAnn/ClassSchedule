@@ -1,15 +1,25 @@
-/* 10-legend.css — 分類色票與篩選按鈕 */
-.keys{margin-top:11px}
-.keys{display:flex;flex-wrap:wrap;gap:9px 22px;align-items:center}
+/* 10-legend.css — 分類色票與篩選按鈕
+
+   單列橫向捲動是兩種版型共用的（以前只有窄版這樣、寬版是 flex-wrap:wrap）。
+   色票列是「掃過去找顏色」的東西，換行會把標題列多撐一整行，而 --dockH 一高，
+   釘住的星期列與 .topspacer 就整個往下推 —— 寬版在筆電寬度剛好會換行，
+   等於課表被固定工具列吃掉一行的高度。
+   出血的寬度綁 --tpx（.top 的左右內距，07-header.css），捲到底剛好貼齊版面邊緣，
+   斷點改內距時不必回來改這裡。匯出的圖另外讓它換行（05-export-mode.css）。 */
+.keys{display:flex;flex-wrap:nowrap;align-items:center;gap:0 16px;
+overflow-x:auto;scrollbar-width:none;
+margin:9px calc(0px - var(--tpx)) 0 0;padding:1px var(--tpx) 3px 0}
+.keys::-webkit-scrollbar{display:none}
 .keys.on .key:not(.sel){opacity:.4}
 .key{border:0;background:transparent;font-family:inherit;cursor:pointer;
-padding:5px 7px;margin:-5px -3px;border-radius:7px;min-height:26px;
-display:flex;align-items:center;gap:7px;font-size:14px;color:var(--ink2);white-space:nowrap}
+padding:5px 7px;margin:-5px -3px;border-radius:7px;min-height:26px;flex:0 0 auto;
+display:flex;align-items:center;gap:7px;font-size:var(--keyfs,14px);color:var(--ink2);white-space:nowrap}
 .key:hover{background:rgba(0,0,0,.05)}
 .key.sel{background:rgba(0,0,0,.08)}
 .key i{width:14px;height:14px;flex:0 0 14px;display:block;border-radius:4px}
+/* flex:0 0 auto — 單列不換行時，這顆若被壓縮就會變成半顆「顯示全…」 */
 .clear{display:none;border:1px solid var(--rule2);background:#fff;font-family:inherit;
 font-size:13px;color:var(--ink2);padding:5px 14px;border-radius:16px;cursor:pointer;
-letter-spacing:.06em;margin-left:4px}
+letter-spacing:.06em;margin-left:4px;flex:0 0 auto}
 .clear:hover{background:#faf7f1}
 .keys.on .clear{display:inline-block}

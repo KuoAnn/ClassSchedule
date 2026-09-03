@@ -1,31 +1,20 @@
-/* 13-liff.css — LINE LIFF／手機 WebView：安全區、長按存圖的全螢幕圖片
+/* 13-liff.css — LINE LIFF／手機 WebView：安全區補丁
    放在最後是刻意的：這裡都是要蓋過前面版型預設值的補丁 */
 
 /* 瀏海與底部 home indicator：固定工具列與版面內距都退到安全區裡。
+   內距讀 07-header.css 的 --tpt／--tpx，斷點縮內距時這裡跟著走，
+   不必再為 @media (max-width:900px) 抄一份。
    窄版輪播的 -14px 出血是相對 .sheet 內距算的，所以這裡加了 inset 之後
    輪播仍然「剛好貼到可視邊緣」，不會被瀏海切到 */
 @supports (padding: env(safe-area-inset-left)){
-  .top{padding-top:calc(13px + env(safe-area-inset-top));
-    padding-left:calc(20px + env(safe-area-inset-left));
-    padding-right:calc(20px + env(safe-area-inset-right))}
+  .top{padding-top:calc(var(--tpt) + env(safe-area-inset-top));
+    padding-left:calc(var(--tpx) + env(safe-area-inset-left));
+    padding-right:calc(var(--tpx) + env(safe-area-inset-right))}
   html.nv .sheet{padding:16px calc(14px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left))}
   .nav.p{margin-left:env(safe-area-inset-left)}
   .nav.n{margin-left:calc(0px - env(safe-area-inset-right))}
-  @media (max-width:900px){
-    .top{padding-top:calc(10px + env(safe-area-inset-top));
-      padding-left:calc(14px + env(safe-area-inset-left));
-      padding-right:calc(14px + env(safe-area-inset-right))}
-  }
 }
 
-/* 手機真實寬度下的標題列：館名整塊不要被拆成「古／亭館」。
-   選擇器要帶 html.nv，否則會輸給 03-view-switch.css 的 html.nv .hd h1 */
+/* 館名整塊不要被拆成「古／亭館」。手機寬度那一級的字級縮放已經併回
+   07-header.css 的 @media (max-width:430px)，兩種版型共用同一組變數 */
 .hd h1 em{white-space:nowrap}
-@media (max-width:430px){
-  html.nv .hd h1{font-size:20px}
-  html.nv .hd h1 em{font-size:11.5px;margin-left:8px}
-  html.nv .tools{gap:5px}
-  html.nv .seg button{padding:5px 8px;font-size:12px}
-  html.nv #view button{padding:5px 7px}
-}
-

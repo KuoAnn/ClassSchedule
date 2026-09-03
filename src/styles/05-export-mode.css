@@ -15,7 +15,9 @@
 .sheet.weekexp .ntrack{overflow:visible;padding:0!important;justify-content:flex-start;width:max-content}
 .sheet.weekexp .dgrp.clone{display:none}
 .sheet.weekexp .ncar::before,.sheet.weekexp .ncar::after{display:none}
-.sheet.weekexp .keys{overflow:visible;flex-wrap:wrap;margin-right:0}
+/* 色票列在畫面上是單列橫向捲動的（10-legend.css），圖裡沒有人可以捲，
+   所以匯出時一律改回換行、出血也收掉。掛在 .flat 上是因為兩種版型的圖都有這顆 class */
+.sheet.flat .keys{overflow:visible;flex-wrap:wrap;margin-right:0;padding-right:0}
 .sheet.noto .dn.today:not(.we){background:transparent}
 .sheet.noto .dn.today.we{background:#ece5d9}
 .sheet.noto .col.today{background:transparent}

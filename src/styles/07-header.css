@@ -1,34 +1,45 @@
-/* 07-header.css — 版面外框、標題、固定工具列與語言／版型按鈕 */
+/* 07-header.css — 版面外框、標題、固定工具列與語言／版型按鈕
+
+   標題／功能／色票三列是「一份元件、兩種版型共用」：寬版直接沿用窄版那組尺寸。
+   尺寸全部走 .top 上的變數，斷點只重新宣告變數、不重寫規則本身。
+   以前是寬版一組（.hd h1 34px）、窄版一組（html.nv .hd h1 26px，在 03-view-switch.css）、
+   @media 再各縮一次（07-header.css 與 13-liff.css），同一顆按鈕的內距散在四個檔案、
+   靠 specificity 與串接順序決勝負 —— 改一處要回頭檢查另外三處，而且很容易改錯邊
+   （這個檔案的基準尺寸原本擺在檔尾，就把 @media 的縮小值整組蓋了回去）。
+   改成變數之後覆寫都是同一個選擇器（.top）在同一個檔案裡，順序與 specificity 都不再是變因。 */
 .sheet{background:var(--page);padding:0 20px 16px;position:relative}
 .sheet .en{display:none}
 .sheet.en .zh{display:none}
 .sheet.en .en{display:inline}
+
+/* 標題列的尺寸變數。宣告在 .top 而不是 :root：標題、按鈕、色票列都在 .top 裡面，
+   靠繼承拿值就好，而 01-tokens.css 那份 :root 會被 build.py 在樣式尾端覆寫（見 AGENTS.md）。 */
+.top{--tpx:20px;--tpt:13px;--tpb:10px;
+--h1:26px;--h1sub:14px;--h1gap:11px;--by:13px;--byls:.14em;--bymt:7px;
+--btnH:34px;--btnGap:7px;--segfs:13px;--segpad:6px 11px;--segpadi:6px 9px;--icon:16px;
+--keyfs:14px}
+.top{position:fixed;top:0;left:0;right:0;z-index:30;background:var(--page);
+padding:var(--tpt) var(--tpx) var(--tpb);border-bottom:1px solid rgba(0,0,0,.05)}
+.topspacer{height:var(--dockH,92px)}
+.trow{display:flex;align-items:center;justify-content:space-between;gap:16px}
+
 .hd{padding-bottom:12px}
-.hd h1{font-size:34px;font-weight:500;letter-spacing:.06em;line-height:1.1}
-.hd .by{font-size:13px;color:var(--ink3);letter-spacing:.14em;margin-top:7px}
+.hd h1{font-size:var(--h1);font-weight:500;letter-spacing:.06em;line-height:1.1}
+.hd h1 em{font-style:normal;font-size:var(--h1sub);font-weight:400;color:var(--ink3);
+letter-spacing:.12em;margin-left:var(--h1gap)}
+.hd .by{font-size:var(--by);color:var(--ink3);letter-spacing:var(--byls);margin-top:var(--bymt)}
 /* 課表版本：當月第一版（1.0）build.py 不會印出來，1.1 起才有這顆 */
 /* 不要加 opacity：--ink3 本身在 --page 上是過的，乘上 .85 會掉到 3.66:1，
    而 11px 屬於「小字」，WCAG 要 4.5:1（wcag.py 會直接抓出來） */
 .hd .by .ver{font-size:11px;letter-spacing:.06em;color:var(--ink3);
 margin-left:9px;font-variant-numeric:tabular-nums}
-.hd h1 em{font-style:normal;font-size:17px;font-weight:400;color:var(--ink3);letter-spacing:.12em;margin-left:18px}
 
-.top{position:fixed;top:0;left:0;right:0;z-index:30;background:var(--page);
-padding:13px 20px 10px;border-bottom:1px solid rgba(0,0,0,.05)}
-.topspacer{height:var(--dockH,92px)}
-.trow{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.tools{display:flex;gap:10px;align-items:center;flex:0 0 auto}
-/* 工具列按鈕的基準尺寸要放在下面那組 @media 之前 ——
-   `.seg button`／`#dl svg`／`#view svg` 這幾條在兩邊的 specificity 一樣（0,1,1），
-   純靠先後決勝負。這塊本來在檔尾，等於把 @media 裡的縮小值整組蓋回去：
-   寬版在手機上（現在 viewport 就是裝置寬，media query 真的會生效）按鈕照桌機尺寸出，
-   標題列被擠成兩行。窄版看不出來，是因為它另外有 html.nv 那組（specificity 高）在撐。 */
-.tools{--btnH:34px}
+.tools{display:flex;gap:var(--btnGap);align-items:center;flex:0 0 auto}
 .tools button{font:400 14px/1 inherit;color:var(--ink2);background:#fff;
 border:1px solid var(--rule2);cursor:pointer;letter-spacing:.06em;border-radius:999px}
 #dl{padding:0;width:var(--btnH);height:var(--btnH);border-radius:50%;
 display:flex;align-items:center;justify-content:center;flex:0 0 auto}
-#dl svg{width:17px;height:17px;display:block}
+#dl svg{width:var(--icon);height:var(--icon);display:block}
 #dl .i-sp{display:none}
 #dl.busy .i-dl{display:none}
 #dl.busy .i-sp{display:block;animation:sp .8s linear infinite}
@@ -36,33 +47,23 @@ display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .tools button:hover{background:#faf7f1;color:var(--ink)}
 .tools button:disabled{opacity:.5;cursor:default}
 .seg{display:flex;align-items:center;height:var(--btnH);background:#fff;
-border:1px solid var(--rule2);border-radius:999px;padding:3px;box-sizing:border-box}
-.seg button{border:0;background:transparent;padding:0 14px;border-radius:999px;
-height:100%;display:flex;align-items:center;font-size:13.5px;color:var(--ink2);letter-spacing:.04em}
+border:1px solid var(--rule2);border-radius:999px;padding:2px;box-sizing:border-box}
+.seg button{border:0;background:transparent;padding:var(--segpad);border-radius:999px;
+height:100%;display:flex;align-items:center;font-size:var(--segfs);color:var(--ink2);letter-spacing:.04em}
 .seg button.on{background:#ece5d9;color:var(--ink);font-weight:500}
-#view button{padding:0 11px;justify-content:center}
-#view svg{width:17px;height:17px;display:block}
+#view button{padding:var(--segpadi);justify-content:center}
+#view svg{width:var(--icon);height:var(--icon);display:block}
 
-/* 空間不足時縮字級與按鈕，讓標題與功能列維持同一列 */
+/* 以下三個斷點只重新宣告變數。900 與 560 這兩檔原本只有寬版吃得到，
+   現在兩種版型一起吃（窄版本來就是這樣：署名在小螢幕縮一號、色票字再縮一號）。 */
 @media (max-width:900px){
-  .top{padding:10px 14px 8px}
-  .hd h1{font-size:22px}
-  .hd h1 em{font-size:12px;margin-left:9px}
-  .hd .by{font-size:11px;margin-top:4px;letter-spacing:.1em}
-  .tools{gap:6px}
-  .seg{padding:2px}
-  .seg button{padding:5px 10px;font-size:12.5px}
-  #view button{padding:5px 8px}
-  #view svg{width:15px;height:15px}
-  #dl{width:30px;height:30px}
-  #dl svg{width:15px;height:15px}
-  .top .keys{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
-    padding-bottom:2px;margin-top:8px;gap:0 16px}
-  .top .keys::-webkit-scrollbar{display:none}
+  .top{--tpx:14px;--tpt:10px;--tpb:8px;--by:11px;--byls:.1em;--bymt:4px}
 }
 @media (max-width:560px){
-  .hd h1{font-size:19px}
-  .seg button{padding:5px 8px;font-size:12px}
-  #view button{padding:5px 7px}
-  .top .key{font-size:13px}
+  .top{--keyfs:13px}
+}
+/* 手機真實寬度：館名整塊不要被拆成「古／亭館」，標題與按鈕一起再縮一級 */
+@media (max-width:430px){
+  .top{--h1:20px;--h1sub:11.5px;--h1gap:8px;
+    --btnGap:5px;--segfs:12px;--segpad:5px 8px;--segpadi:5px 7px}
 }
