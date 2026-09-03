@@ -43,3 +43,4 @@ gap:3px;white-space:nowrap;color:#786a56}
 .cols{position:absolute;inset:0;display:flex}
 .col{flex:1;position:relative;border-right:2px solid var(--lane)}
 .col:last-child{border-right:0}
+.col .nowline{position:absolute;left:0;right:0;height:0;border-top:2px solid #cc2b2b;z-index:27;pointer-events:none}
