@@ -35,13 +35,12 @@ function updateNowLine(td, now){
   if (!col) return;
   var evs = col.querySelectorAll('.ev[data-start][data-end]');
   if (!evs.length) return;
-  var start = Infinity, end = -Infinity;
+  var inClass = false;
   for (var j = 0; j < evs.length; j++) {
     var st = +evs[j].dataset.start, en = +evs[j].dataset.end;
-    if (st < start) start = st;
-    if (en > end) end = en;
+    if (now >= st && now < en) { inClass = true; break; }
   }
-  if (!(now >= start && now <= end)) return;
+  if (!inClass) return;
   var y = axisY(now);
   if (y === null) return;
   var line = col.querySelector('.nowline');
