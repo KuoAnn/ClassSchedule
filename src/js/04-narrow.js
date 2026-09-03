@@ -84,7 +84,9 @@ function layout(){
   // 單側能完整顯示的鄰日數，以及最外側被切一半那天的可見寬度
   var m = Math.floor(side / step);
   var sliver = Math.max(0, side - m * step - gap);
-  var f = sliver > 3 ? Math.min(Math.max(sliver, 18), 130) : 0;
+  // 單日寬是整數，邊緣常會留下 1～2px 的半格殘影；只要有切到外側那天就開淡出，
+  // 讓邊界看起來是柔化而不是卡片被切掉。
+  var f = sliver > 0 ? Math.min(Math.max(sliver, 14), 130) : 0;
   setFade(car, f);
   placeNav();
 }
