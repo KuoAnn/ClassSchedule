@@ -79,7 +79,7 @@ function markPast(){
         chip.dataset.s = state;
         if (state === 'live') {
           chip.innerHTML = '';
-          chip.setAttribute('aria-label', STATE[state].en);
+          chip.setAttribute('aria-label', STATE[state].zh + ' ' + STATE[state].en);
         } else {
           chip.removeAttribute('aria-label');
           chip.innerHTML = '<span class="zh" lang="zh-Hant">' + STATE[state].zh +
