@@ -30,7 +30,7 @@ KINDS = (KIND_SUB, KIND_OFF)
 # 一個分類一行：color 色票、en 英文全名、short 卡片與色票列上的簡稱、
 # tag=False 代表課名本身就等於分類（卡片不再上標籤，顏色仍保留）、
 # note 是色票列上補充的小字（zh, en）。dict 的順序就是色票列的順序。
-CAT_FIX = {"豪宇系列": "寰宇系列", "高難度": "肌耐力/核心/快節奏"}
+CAT_FIX = {"高難度": "肌耐力/核心/快節奏"}
 CATS = {
     "伸展": dict(color="#4792B8", en="Stretch", short=("伸展", "Stretch")),
     "肌耐力/核心/快節奏": dict(color="#B4747C", en="Strength / Core / Pace",
@@ -168,7 +168,6 @@ def level(v):
 # ---------- 課名 ----------
 NAME_FIX = {"基礎瑜伽 Fundamental": "基礎瑜伽", "瑜伽提斯 Yoga Tone": "瑜伽提斯",
             "墊上＿皮拉提斯": "墊上皮拉提斯",
-            "豪宇入門": "寰宇入門", "豪宇瑜伽": "寰宇瑜伽",
             "慢流輪": "慢流暢"}
 # 「瑜伽」二字一律省略，除下列名稱（去掉後語意不成立）
 KEEP_YOGA = {"陰瑜伽", "瑜伽輪", "瑜伽提斯"}
@@ -189,8 +188,9 @@ EN_NAME = {
     "肌筋膜按摩": "Myofascial", "筋膜舒壓伸展": "Fascia Release",
     "尼古瑪瑜伽": "Niguma Yoga", "熱哈達": "Hot Hatha", "火箭瑜伽": "Rocket Yoga",
     "原力核心": "Core Power", "寰宇瑜伽": "Universal Yoga", "溫和緩": "Warm Gentle",
+    "阿斯串聯": "Ashtanga Vinyasa",
 }
-EN_TEACHER = {"丁丁": "Ding-Ding", "柳川": "Liu-Chuan", "錦潭": "Jin-Tan",
+EN_TEACHER = {"丁丁": "Ding-Ding", "柳川": "Liu-Chuan", "紳漳": "Shen-Chang",
               "吳柏樵": "Wu Po-Chiao"}
 
 
