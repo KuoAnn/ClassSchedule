@@ -5,7 +5,7 @@
     el.classList.add('today');
   });
 })();
-// 當天課程三種狀態：已結束（反灰淡化）／進行中（標籤＋外圈）／待開課（不標）
+// 當天課程三種狀態：已結束（反灰淡化）／進行中（只留 live-pulse 圖示）／待開課（不標）
 var STATE = {
   done: {zh: '結束', en: 'Ended'},
   live: {zh: '進行中', en: 'Live'}
@@ -77,8 +77,14 @@ function markPast(){
       }
       if (chip.dataset.s !== state) {
         chip.dataset.s = state;
-        chip.innerHTML = '<span class="zh" lang="zh-Hant">' + STATE[state].zh +
-                         '</span><span class="en" lang="en">' + STATE[state].en + '</span>';
+        if (state === 'live') {
+          chip.innerHTML = '';
+          chip.setAttribute('aria-label', STATE[state].zh + ' ' + STATE[state].en);
+        } else {
+          chip.removeAttribute('aria-label');
+          chip.innerHTML = '<span class="zh" lang="zh-Hant">' + STATE[state].zh +
+                           '</span><span class="en" lang="en">' + STATE[state].en + '</span>';
+        }
       }
     } else if (chip) {
       chip.remove();
