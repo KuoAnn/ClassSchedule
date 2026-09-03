@@ -10,17 +10,17 @@ var STATE = {
   done: {zh: '結束', en: 'Ended'},
   live: {zh: '進行中', en: 'Live'}
 };
-function axisY(min){
+function axisY(minuteOfDay){
   var ax = window.SCHEDULE && window.SCHEDULE.axis;
   if (!ax || !ax.length) return null;
   var last = ax[ax.length - 1];
-  if (min === last.m) return last.y;
-  if (min < ax[0].m || min > last.m) return null;
+  if (minuteOfDay === last.m) return last.y;
+  if (minuteOfDay < ax[0].m || minuteOfDay > last.m) return null;
   for (var i = 1; i < ax.length; i++) {
     var a = ax[i - 1], b = ax[i];
-    if (min > b.m) continue;
+    if (minuteOfDay > b.m) continue;
     if (b.m === a.m) return b.y;
-    return a.y + (min - a.m) * (b.y - a.y) / (b.m - a.m);
+    return a.y + (minuteOfDay - a.m) * (b.y - a.y) / (b.m - a.m);
   }
   return null;
 }
