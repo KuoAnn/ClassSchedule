@@ -63,17 +63,13 @@ function sizeDays(){
 function layout(){
   if (!document.documentElement.classList.contains('nv')) return;
   var nl = document.querySelector('.nlist'), car = document.querySelector('.ncar');
-  var per = sizeDays();
+  sizeDays();
   var dayw = px('--dayw', 320), gap = px('--gap', 12);
   var W = track.clientWidth, step = dayw + gap, n = NDAYS;
   // 七天全部放得下 → 關閉輪播互動
   var full = (n * dayw + (n - 1) * gap) <= W;
   track.classList.toggle('full', full);
   nl.classList.toggle('full', full);
-  // 一次擺得下兩天以上就靠左對齊、整天整天地翻（吸附點改成 start）；
-  // 只擺得下一天時才維持原本的「當天置中、左右露一角」
-  var multi = !full && per > 1;
-  track.classList.toggle('multi', multi);
   navp.style.display = navn.style.display = full ? 'none' : '';
   if (full) {
     track.style.paddingLeft = track.style.paddingRight = '0px';
@@ -81,17 +77,8 @@ function layout(){
     setFade(car, 0);
     return;
   }
-  if (multi) {
-    track.style.paddingLeft = track.style.paddingRight = '0px';
-    // 單日寬是整數，平分之後會剩下 1～2px，下一欄的左側色條就會從裁切邊露出那麼一點點。
-    // 那條線看起來就是「卡片被切掉」，所以用右側的漸層把「最後一欄之後的空白」蓋掉 ——
-    // 蓋住的寬度剛好是留白＋餘數，不會遮到任何卡片
-    var used = per * dayw + (per - 1) * gap;
-    setFade(car, 0, Math.max(0, W - used));
-    placeNav();
-    return;
-  }
-  // 當天置中：左右各留 (可視寬 − 單日寬)/2，兩端的日子也能捲到正中
+  // 非 full 一律採「某一天置中」：進入窄版先以今天為定位、切換星期與拖拉放手都吸附到
+  // 最近的置中定位點；其餘星期會由中間往兩側平均露出。
   var side = (W - dayw) / 2;
   track.style.paddingLeft = track.style.paddingRight = side + 'px';
   // 單側能完整顯示的鄰日數，以及最外側被切一半那天的可見寬度
