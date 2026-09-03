@@ -22,4 +22,15 @@ display:flex;align-items:center;gap:7px;font-size:var(--keyfs,14px);color:var(--
 font-size:13px;color:var(--ink2);padding:5px 14px;border-radius:16px;cursor:pointer;
 letter-spacing:.06em;margin-left:4px;flex:0 0 auto}
 .clear:hover{background:#faf7f1}
-.keys.on .clear{display:inline-block}
+/* 這顆排在色票的最後面，而色票列是單列橫向捲動的 —— 分類一多（現在 10 個），
+   點下去之後「顯示全部」就落在可視範圍外，等於篩選解不掉（除非先把色票列捲到底）。
+   所以篩選開著時把它釘在右緣：捲到底時它本來就停在那個位置，看起來沒有移動過，
+   捲回左邊才會發現它留在邊上。box-shadow 是同色的外框，用來蓋掉從底下捲過去的色票，
+   不是陰影（外側被 overflow 裁掉，所以只看得到蓋住的那一半）。
+   出血也要一起收掉：sticky 的 right 是對捲動容器的 padding box 量的，
+   而 .keys 平常出血到版面邊緣（margin-right 負 --tpx），不收的話按鈕右邊會空出
+   一段還在捲的色票，看起來像卡在半路。篩選開著時右緣本來就被按鈕佔住，
+   那段「切齊螢幕邊緣」的提示沒有損失。 */
+.keys.on{margin-right:0;padding-right:0}
+.keys.on .clear{display:inline-block;position:sticky;right:0;
+box-shadow:0 0 0 7px var(--page)}

@@ -8,7 +8,7 @@
 .hcorner{flex:0 0 var(--gut);position:sticky;left:0;z-index:3;background:var(--page)}
 .dn:nth-child(2){border-top-left-radius:10px}
 .dn:last-child{border-top-right-radius:10px}
-.dn{flex:1;text-align:center;font-size:18px;font-weight:500;letter-spacing:.16em;padding:12px 0;border-right:2px solid var(--lane);border-bottom:1px solid var(--rule2)}
+.dn{flex:1;text-align:center;font-size:16px;font-weight:500;letter-spacing:.16em;padding:12px 0;border-right:2px solid var(--lane);border-bottom:1px solid var(--rule2)}
 .dn:last-child{border-right:0}
 .dn.we{background:#ece5d9}
 .tdy{display:none;font-size:11px;font-weight:400;letter-spacing:.08em;color:#7f643a;

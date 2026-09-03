@@ -7,8 +7,11 @@ display:flex;align-items:center;justify-content:center;padding:0}
 .nav:hover{background:#fff;color:var(--ink)}
 html.wv .nav{display:none}
 .dgrp{flex:0 0 var(--dayw);scroll-snap-align:center;margin-bottom:2px}
+/* 18px＋weight 700 剛好落在 WCAG「大字」的界線下面（粗體要 18.66px 以上才算），
+   所以這行是以小字的 4.5:1 在驗 —— 星期用的是 --ink，在 --page 上有 10:1 以上，
+   過得很寬鬆；要換成比較淡的顏色時要記得它現在是小字。 */
 .dhd{display:flex;align-items:baseline;justify-content:center;
-font-size:21px;font-weight:700;letter-spacing:.14em;
+font-size:18px;font-weight:700;letter-spacing:.14em;
 padding-top:2px;padding-bottom:8px;border-bottom:2px solid var(--lane);
 background:var(--page)}
 .ndock:not(.show){display:none}
