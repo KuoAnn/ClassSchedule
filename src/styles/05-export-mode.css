@@ -4,35 +4,21 @@
 .sheet.flat .hcorner{position:static}
 .sheet.flat .gut{position:relative}
 .sheet.flat .ndock{display:none}
-<<<<<<< HEAD
 .sheet.flat .nowline{display:none!important}
 /* 匯出的單日寬釘成 170px：跟畫面上算出來的差不多（手機實測 143～172px），
-=======
-/* 匯出的單日寬釘成 148px：跟畫面上算出來的差不多（手機實測 143～172px），
->>>>>>> a9002f8 (feat(narrow): 窄版卡片左右壓縮，標籤改成區塊換行)
    所以卡片的比例與換行都跟畫面一致 —— 釘成 320px 的那一版把七欄拉得很寬，
    卡片右半邊全是空白，跟畫面上緊湊的窄欄完全不像。
-   會從 170px 再收到 148px，是因為 170px 的卡片右上角（課名右邊到級別標籤之間）
-   還是一片空白；148px 是「最寬的異動標籤（英文約 115px）＋左右內距」的下限再留一點餘裕，
-   再窄就會壓到標籤，而標籤裡的字是不換行的。
    釘住而不是直接用畫面的 --dayw，是因為那個值跟著螢幕寬跳（375px 算出 144、
    390px 算出 152、320px 算出 246），同一份課表在不同手機會匯出差很多的圖。
    宣告在 .sheet 上才蓋得過 sizeDays() 寫在 :root 的 inline 值（自訂屬性靠繼承） */
-.sheet.weekexp{width:max-content;--dayw:148px}
+.sheet.weekexp{width:max-content;--dayw:170px}
 .sheet.weekexp .nlist,.sheet.weekexp .ncar{width:max-content}
 .sheet.weekexp .ntrack{overflow:visible;padding:0!important;justify-content:flex-start;width:max-content}
 .sheet.weekexp .dgrp.clone{display:none}
 .sheet.weekexp .ncar::before,.sheet.weekexp .ncar::after{display:none}
-<<<<<<< HEAD
 /* 色票列在畫面上是單列橫向捲動的（10-legend.css），圖裡沒有人可以捲，
    所以匯出時一律改回換行、出血也收掉。掛在 .flat 上是因為兩種版型的圖都有這顆 class */
 .sheet.flat .keys{overflow:visible;flex-wrap:wrap;margin-right:0;padding-right:0}
-=======
-/* 色票列不可以決定整份的寬度：.sheet 是 width:max-content，色票列排成一長條就把
-   版面撐得比七欄還寬，右邊留下一塊誰也沒用到的空白（英文版曾多出 240px）。
-   width:0 讓它不參與 max-content 的計算，min-width:100% 再把它撐回容器寬、排不下就換行。 */
-.sheet.weekexp .keys{overflow:visible;flex-wrap:wrap;margin-right:0;width:0;min-width:100%}
->>>>>>> a9002f8 (feat(narrow): 窄版卡片左右壓縮，標籤改成區塊換行)
 .sheet.noto .dn.today:not(.we){background:transparent}
 .sheet.noto .dn.today.we{background:#ece5d9}
 .sheet.noto .col.today{background:transparent}
@@ -43,9 +29,9 @@
    螢幕上那些留白是為了好點擊，印成圖只是白費高度。
    時段與老師維持各自一行 —— 併成一行只有在欄位很寬（320px）時才放得下，
    而圖已經改成比照畫面的窄欄了。 */
-.sheet.npack .lc{padding:5px 7px;margin-bottom:3px;border-radius:6px}
-.sheet.npack .lc .nr{gap:1px 5px}
+.sheet.npack .lc{padding:5px 8px;margin-bottom:4px;border-radius:6px}
+.sheet.npack .lc .nr{gap:6px}
 .sheet.npack .lc .n{line-height:1.18}
 .sheet.npack .lc .t,.sheet.npack .lc .m{line-height:1.24}
-.sheet.npack .lc .bt{margin-top:3px;gap:3px}
+.sheet.npack .lc .bt{margin-top:3px;gap:4px}
 .sheet.npack .lc .bt:empty{display:none}
